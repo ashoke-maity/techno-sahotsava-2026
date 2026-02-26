@@ -48,14 +48,11 @@ export default function UnderConstruction() {
                     <h1 className="text-white text-5xl md:text-8xl font-['Outfit'] font-black tracking-[0.2em] uppercase text-center drop-shadow-[0_0_30px_rgba(255,255,255,0.8)]">
                         Opening<br />Soon<span className="text-red-600 animate-pulse">!</span>
                     </h1>
-                    <p className="mt-8 text-gray-400 font-sans text-xl tracking-widest uppercase">
-                        The portals are currently sealed.
-                    </p>
                     <button
                         onClick={handleReturn}
                         className="mt-16 px-8 py-3 bg-white/10 border border-white/20 hover:bg-white hover:text-black hover:border-white text-white font-['Outfit'] font-bold uppercase tracking-widest rounded-sm transition-all duration-300"
                     >
-                        Return to Hub
+                        Return to Voyage
                     </button>
 
                     <style>{`
