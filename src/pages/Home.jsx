@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import leftSkull from "../assets/backgrounds/Left skull.webp";
 import rightSkull from "../assets/backgrounds/RS3.webp";
 import mainSkull from "../assets/backgrounds/Skull pro.webp";
@@ -14,14 +13,14 @@ import teamBg from "../assets/backgrounds/Lev1.png";
 import loadingVideo from "../assets/loading_screen/loading_anim.mp4";
 
 export default function Home() {
-  const navigate = useNavigate();
-
   const [isWarping, setIsWarping] = useState(false);
 
   const handleRegisterClick = () => {
-    navigate("/register");
+    const registerUrl = import.meta.env.VITE_REGISTER_URL;
+    if (registerUrl) {
+      window.location.href = registerUrl;
+    }
   };
-
   const handleSponsorsClick = () => {
     setIsWarping(true);
   };
