@@ -1,19 +1,30 @@
 import React, { useState } from "react";
-import leftSkull from "../assets/backgrounds/Left skull.webp";
-import rightSkull from "../assets/backgrounds/RS3.webp";
-import mainSkull from "../assets/backgrounds/Skull pro.webp";
-import background from "../assets/backgrounds/3. BGwithIllustrations.webp";
+import { useNavigate } from "react-router-dom";
+import background from "../assets/backgrounds/MetamorphosisByShubho.webp";
 import titleFont from "../assets/backgrounds/Untitled35_20260106001225.png";
 import AboutOT from "../assets/backgrounds/AboutOT.png";
-import featuredBg from "../assets/backgrounds/TheOneByShubho.png";
+import featuredBg from "../assets/backgrounds/TheOneByShubho.webp";
 import GalleryOT from "../assets/backgrounds/GalleryOT.png";
-import galleryBg from "../assets/backgrounds/6.png";
+import galleryBg from "../assets/backgrounds/6.webp";
 import TeamOT from "../assets/backgrounds/MTT.OT.png";
-import teamBg from "../assets/backgrounds/Lev1.png";
+import teamBg from "../assets/backgrounds/Lev1.webp";
 import loadingVideo from "../assets/loading_screen/loading_anim.mp4";
+
+// Gallery Images
+import galleryImg1 from "../assets/Gallery/_MG_3475.jpg.jpeg";
+import galleryImg2 from "../assets/Gallery/_MG_3354.jpg.jpeg";
+import galleryImg3 from "../assets/Gallery/_DSC2253.jpg.jpeg";
+import galleryImg4 from "../assets/Gallery/_MG_3323.jpg.jpeg";
+import galleryImg5 from "../assets/Gallery/_DSC2047.jpg.jpeg";
+import galleryImg6 from "../assets/Gallery/_DSC1469.jpg.jpeg";
+import galleryImg7 from "../assets/Gallery/_DSC0464.jpg.jpeg";
+import galleryImg8 from "../assets/Gallery/_MG_3269.jpg.jpeg";
+import galleryImg9 from "../assets/Gallery/_DSC1411.jpg.jpeg";
+import galleryImg10 from "../assets/Gallery/_DSC0446.jpg.jpeg";
 
 export default function Home() {
   const [isWarping, setIsWarping] = useState(false);
+  const navigate = useNavigate();
 
   const handleRegisterClick = () => {
     const registerUrl = import.meta.env.VITE_REGISTER_URL;
@@ -25,6 +36,43 @@ export default function Home() {
     setIsWarping(true);
   };
 
+  const teamMembers = [
+    { name: "Srayosee", handle: "Srayosee" },
+    { name: "Roshni", handle: "Roshni" },
+    { name: "Subhadeep", handle: "Subhadeep" },
+    { name: "Ashoke", handle: "Ashoke" },
+    { name: "Rohit", handle: "Rohit" },
+    { name: "Pritha", handle: "Pritha" },
+    { name: "Shrayan", handle: "Shrayan" },
+    { name: "Srijita", handle: "Srijita" },
+    { name: "Tathagata", handle: "Tathagata" },
+    { name: "Swastick", handle: "Swastick" },
+  ];
+
+  // Detect mobile devices and block the site with a notice
+  const isMobileInitial = typeof navigator !== 'undefined' && (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width:768px)').matches));
+  const [isMobileDevice, setIsMobileDevice] = useState(isMobileInitial);
+
+  // Keep detection responsive to resize/orientation changes
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(max-width:768px)');
+    const handler = (e) => setIsMobileDevice(e.matches || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    try { mq.addEventListener('change', handler); } catch (e) { mq.addListener(handler); }
+    return () => { try { mq.removeEventListener('change', handler); } catch (e) { mq.removeListener(handler); } };
+  }, []);
+
+
+  if (isMobileDevice) {
+    return (
+      <div className="fixed inset-0 z-[99999] bg-black flex items-center justify-center px-6">
+        <div className="max-w-xl text-center">
+          <h1 className="text-white text-2xl md:text-4xl font-['Outfit'] font-extrabold mb-4">This site only works on Desktop/Laptop</h1>
+          <p className="text-white/70 mb-6">For the best experience please open this site on a desktop or laptop device.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full min-h-screen bg-black overflow-x-hidden font-sans">
@@ -53,36 +101,7 @@ export default function Home() {
             className="absolute inset-0 w-full h-full object-cover z-0"
           />
 
-          {/* Container for the skulls, placed above the background */}
-          <div className="absolute inset-0 z-10 pointer-events-none flex justify-center items-center overflow-hidden">
-            <div className="relative w-full min-w-[1024px] md:min-w-0 md:w-full h-full flex-shrink-0">
-              <div className="absolute left-0 top-4 w-full h-full flex justify-center items-center z-0">
-                <img
-                  src={mainSkull}
-                  alt="Main Guardian"
-                  className="absolute inset-0 w-full h-full object-cover object-center"
-                />
-              </div>
 
-              {/* Left side taking slightly more than half the screen to overlap the center */}
-              <div className="absolute left-0 top-4 w-[76%] h-full z-10">
-                <img
-                  src={leftSkull}
-                  alt="Left Guardian"
-                  className="absolute inset-0 w-full h-full object-cover object-right"
-                />
-              </div>
-
-              {/* Right side taking slightly more than half the screen to overlap the center */}
-              <div className="absolute right-0 top-4 w-[80.8%] h-full z-10">
-                <img
-                  src={rightSkull}
-                  alt="Right Guardian"
-                  className="absolute inset-0 w-full h-full object-cover object-left"
-                />
-              </div>
-            </div>
-          </div>
 
           {/* Optional Gradient Overlay if you ever want to blend it slightly in the middle */}
           <div className="absolute inset-0 z-20 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]"></div>
@@ -116,12 +135,12 @@ export default function Home() {
               className="relative z-10 w-auto h-[50vh] drop-shadow-[0_0_20px_rgba(255,255,255,0.4)] object-contain -mb-20"
             />
 
-            {/* Register Button */}
+            {/* Register Button - Disabled */}
             <button
-              onClick={handleRegisterClick}
-              className="relative z-10 pointer-events-auto px-10 py-3 bg-gradient-to-r from-red-600 to-orange-500 hover:from-white hover:to-white hover:text-red-600 text-white font-['Outfit'] font-extrabold uppercase tracking-widest text-lg rounded-sm shadow-[0_0_15px_rgba(255,0,0,0.5)] hover:shadow-[0_0_30px_rgba(255,255,255,0.8)] transition-all duration-75 transform hover:-translate-y-1"
+              disabled
+              className="relative z-10 pointer-events-none px-10 py-3 bg-gray-600/50 text-white/50 font-['Outfit'] font-extrabold uppercase tracking-widest text-lg rounded-sm shadow-inner cursor-not-allowed"
             >
-              Register
+              Registration opening soon!
             </button>
           </div>
 
@@ -207,19 +226,7 @@ export default function Home() {
           {/* Sticky Viewport Container */}
           <div className="sticky top-0 w-full h-screen pointer-events-none flex items-center justify-center">
 
-            {/* Layer 1: Volumetric Shadow Waves (Monochrome) */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-[-50%] left-[-25%] w-[150%] h-[150%] animate-[spin_100s_linear_infinite] opacity-20">
-                <div
-                  className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0deg,rgba(255,255,255,0.05)_90deg,transparent_180deg,rgba(255,255,255,0.03)_270deg,transparent_360deg)] blur-[120px]"
-                ></div>
-              </div>
-              <div className="absolute top-[-20%] left-[-20%] w-[140%] h-[140%] animate-[spin_70s_linear_infinite_reverse] opacity-15">
-                <div
-                  className="absolute inset-0 bg-[conic-gradient(from_180deg,transparent_0deg,rgba(255,255,255,0.04)_120deg,transparent_240deg,rgba(255,255,255,0.06)_300deg,transparent_360deg)] blur-[140px]"
-                ></div>
-              </div>
-            </div>
+
 
             {/* Layer 2: Pure White Shimmering Stardust - Increased density for the longer journey */}
             <div className="absolute inset-0 z-10">
@@ -241,12 +248,7 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Layer 3: The Void Singularity (Monochrome Glow) */}
-            <div className="absolute z-20 w-[60vw] h-[60vw] max-w-2xl flex items-center justify-center">
-              <div className="absolute inset-0 bg-white/[0.03] rounded-full blur-[180px] animate-[pulse_8s_ease-in-out_infinite]"></div>
-              <div className="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent blur-sm rotate-[10deg]"></div>
-              <div className="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent blur-sm -rotate-[10deg]"></div>
-            </div>
+
           </div>
         </div>
 
@@ -407,7 +409,7 @@ export default function Home() {
             <img
               src={GalleryOT}
               alt="Gallery Title Layout"
-              className="w-full h-auto opacity-0"
+              className="w-170 h-auto opacity-0"
             />
 
             {/* Pure White Fill Mask! */}
@@ -430,22 +432,22 @@ export default function Home() {
         {/* TEMPORAL MEMORY ARCHIVE */}
         <div className="relative w-full max-w-7xl mx-auto px-6 z-30 pb-96">
           <div className="relative h-[220vh] md:h-[180vh] w-full mt-24 perspective-[2000px]">
-            {/* Memory Data Array */}
+            {/* Memory Data Array - Restored Scattered Orientation */}
             {[
-              { id: "01", style: "polaroid", pos: { top: "2%", left: "5%" }, rot: "-8deg", z: "50px", date: "2026.01.24", title: "The First Spark", loc: "ARCHIVED" },
-              { id: "02", style: "polaroid", pos: { top: "8%", left: "40%" }, rot: "5deg", z: "120px", date: "2026.02.01", title: "Celestial Eve", loc: "GRAND_ARENA" },
-              { id: "03", style: "polaroid", pos: { top: "5%", left: "72%" }, rot: "-12deg", z: "80px", date: "2026.02.10", title: "Divine Pulse", loc: "SYMPHONY" },
-              { id: "04", style: "polaroid", pos: { top: "25%", left: "2%" }, rot: "10deg", z: "60px", date: "2026.02.15", title: "Echoes of Art", loc: "HUB" },
-              { id: "05", style: "wide", pos: { top: "35%", right: "5%" }, rot: "-5deg", z: "150px", date: "2026.02.20", title: "Grand Highlight", loc: "HIGHLIGHT_REEL" },
-              { id: "06", style: "polaroid", pos: { top: "45%", left: "30%" }, rot: "7deg", z: "90px", date: "2026.02.22", title: "Sahara Heart", loc: "CORE" },
-              { id: "07", style: "circle", pos: { top: "60%", left: "5%" }, rot: "-4deg", z: "40px", date: "2026.02.25", title: "Rewind", loc: "STREAMING" },
-              { id: "08", style: "polaroid", pos: { top: "65%", right: "10%" }, rot: "15deg", z: "110px", date: "2026.02.26", title: "Metamorphosis", loc: "TRANSFORMATION" },
-              { id: "09", style: "polaroid", pos: { top: "75%", left: "20%" }, rot: "-6deg", z: "70px", date: "2026.02.27", title: "Eternal Fragment", loc: "GHOSTS" },
-              { id: "10", style: "polaroid", pos: { top: "85%", left: "55%" }, rot: "3deg", z: "130px", date: "2026.02.28", title: "Midnight Mirage", loc: "FINALE" }
+              { pos: { top: "2%", left: "5%" }, rot: "-8deg", z: "50px", img: galleryImg1 },
+              { pos: { top: "8%", left: "40%" }, rot: "5deg", z: "120px", img: galleryImg2 },
+              { pos: { top: "5%", left: "72%" }, rot: "-12deg", z: "80px", img: galleryImg3 },
+              { pos: { top: "25%", left: "2%" }, rot: "10deg", z: "60px", img: galleryImg4 },
+              { pos: { top: "35%", right: "5%" }, rot: "-5deg", z: "150px", img: galleryImg5 },
+              { pos: { top: "45%", left: "30%" }, rot: "7deg", z: "90px", img: galleryImg6 },
+              { pos: { top: "60%", left: "5%" }, rot: "-4deg", z: "40px", img: galleryImg7 },
+              { pos: { top: "65%", right: "10%" }, rot: "15deg", z: "110px", img: galleryImg8 },
+              { pos: { top: "75%", left: "20%" }, rot: "-6deg", z: "70px", img: galleryImg9 },
+              { pos: { top: "85%", left: "55%" }, rot: "3deg", z: "130px", img: galleryImg10 }
             ].map((card, i) => (
               <div
                 key={i}
-                className="absolute w-[300px] md:w-[350px] group cursor-pointer transition-all duration-700 z-10"
+                className="absolute w-[300px] md:w-[350px] z-10"
                 style={{
                   top: card.pos.top,
                   left: card.pos.left,
@@ -453,45 +455,17 @@ export default function Home() {
                   transform: `rotate(${card.rot}) translateZ(${card.z})`
                 }}
               >
-                {card.style === 'circle' ? (
-                  /* Circular "Rewind" Style */
-                  <div className="relative aspect-square w-[250px] bg-white/5 backdrop-blur-lg border border-white/10 p-3 rounded-full flex items-center justify-center group-hover:scale-125 group-hover:bg-white/10 transition-all duration-700">
-                    <div className="text-center">
-                      <p className="text-white font-['Outfit'] font-bold text-xl uppercase tracking-widest group-hover:animate-pulse">{card.title}</p>
-                      <p className="text-white/40 font-mono text-[8px] mt-1">{card.loc}_NULL</p>
-                    </div>
+                <div className="relative w-full aspect-[4/5] bg-white/5 border border-white/20 p-2 rounded-sm shadow-2xl overflow-hidden">
+                  <div className="relative w-full h-full bg-[#0a0a0a] overflow-hidden">
+                    <img src={card.img} alt="Gallery item" className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent z-10"></div>
                   </div>
-                ) : card.style === 'wide' ? (
-                  /* Wide "Highlight" Style */
-                  <div className="relative aspect-video w-[400px] md:w-[450px] bg-black/40 backdrop-blur-md border border-white/10 p-2 rounded-lg group-hover:rotate-0 group-hover:scale-110 transition-all duration-700 overflow-hidden shadow-2xl">
-                    <div className="absolute inset-0 bg-[#080808] opacity-60"></div>
-                    <div className="relative z-10 w-full h-full flex flex-col justify-end p-6 bg-gradient-to-t from-black via-transparent to-transparent">
-                      <h4 className="text-pink-500 font-bold tracking-[0.5em] text-[10px] mb-2 uppercase">{card.loc}</h4>
-                      <h3 className="text-white font-['Outfit'] font-extrabold text-3xl uppercase tracking-tighter group-hover:tracking-widest transition-all duration-700">{card.title}</h3>
-                    </div>
-                    <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-white/40"></div>
-                  </div>
-                ) : (
-                  /* Classic Polaroid/Archive Style */
-                  <div className="relative w-full aspect-[4/5] bg-white/5 backdrop-blur-xl border border-white/20 p-3 rounded-sm shadow-2xl overflow-hidden group-hover:rotate-0 group-hover:scale-105 group-hover:translateZ(150px) group-hover:bg-white/10 transition-all duration-700">
-                    <div className="relative w-full h-[85%] bg-[#0a0a0a] overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"></div>
-                      <div className="absolute inset-0 flex items-center justify-center opacity-20 group-hover:opacity-40 transition-opacity">
-                        <p className="text-white font-['Outfit'] tracking-[0.5em] text-xs">MEMORY_{card.id}</p>
-                      </div>
-                      <div className="absolute inset-0 w-full h-1 bg-white/20 blur-md -top-full group-hover:top-[200%] transition-all duration-[2s] z-20"></div>
-                    </div>
-                    <div className="mt-4 px-2">
-                      <h4 className="text-white/40 font-mono text-[10px] uppercase tracking-tighter">Archived // {card.date}</h4>
-                      <h3 className="text-white font-['Outfit'] font-bold text-lg uppercase tracking-wider group-hover:text-pink-400 transition-colors">{card.title}</h3>
-                    </div>
-                    <div className="absolute inset-0 bg-white/5 blur-3xl -z-10 group-hover:opacity-100 transition-opacity duration-700"></div>
-                  </div>
-                )}
+                </div>
               </div>
             ))}
           </div>
         </div>
+
         {/* Bottom Blend Gradient to soften the exit */}
         <div className="absolute inset-x-0 bottom-0 h-[30vh] bg-gradient-to-t from-black to-transparent z-20 pointer-events-none"></div>
       </section>
@@ -527,22 +501,24 @@ export default function Home() {
       >
         {/* STARDUST LINGER */}
         <div className="absolute inset-x-0 top-0 h-[60vh] z-10 pointer-events-none">
-          {[...Array(30)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute bg-white rounded-full animate-pulse"
-              style={{
-                width: `${Math.random() * 2 + 0.5}px`,
-                height: `${Math.random() * 2 + 0.5}px`,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                opacity: Math.random() * 0.2 + 0.05,
-                animationDuration: `${Math.random() * 4 + 2}s`,
-                animationDelay: `${Math.random() * 4}s`,
-                boxShadow: '0 0 5px rgba(255,255,255,0.3)'
-              }}
-            ></div>
-          ))}
+          {
+            [...Array(30)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute bg-white rounded-full animate-pulse"
+                style={{
+                  width: `${Math.random() * 2 + 0.5}px`,
+                  height: `${Math.random() * 2 + 0.5}px`,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  opacity: Math.random() * 0.2 + 0.05,
+                  animationDuration: `${Math.random() * 4 + 2}s`,
+                  animationDelay: `${Math.random() * 4}s`,
+                  boxShadow: '0 0 5px rgba(255,255,255,0.3)'
+                }}
+              ></div>
+            ))
+          }
         </div>
 
         {/* Cinematic Dark Overlays */}
@@ -555,7 +531,7 @@ export default function Home() {
             <img
               src={TeamOT}
               alt="Meet The Team"
-              className="w-full h-auto opacity-0"
+              className="w-170 h-auto opacity-0"
             />
             <div
               className="absolute inset-0 w-full h-full bg-white"
@@ -576,18 +552,23 @@ export default function Home() {
         {/* Team Cards Placeholder Area */}
         <div className="relative z-30 w-full max-w-[90vw] mx-auto px-4 pb-32">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="group relative aspect-[3/4] bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm overflow-hidden p-1 transition-all duration-700 hover:scale-[1.02] hover:bg-white/10">
+            {teamMembers.map((member, i) => (
+              <div key={i} className="group relative aspect-[3/4] bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm overflow-hidden p-1">
                 <div className="w-full h-full border border-white/5 relative bg-black/40 flex flex-col justify-end p-8 overflow-hidden">
-                  {/* Member Identity Number */}
-                  <p className="absolute top-6 left-6 font-mono text-[10px] text-white/20 tracking-widest">TEAM_CORE_00{i + 1}</p>
-                  {/* Scanning Effect */}
-                  <div className="absolute inset-0 w-full h-1 bg-white/20 blur-md -top-full group-hover:top-[200%] transition-all duration-[2.5s]"></div>
 
                   <div className="relative z-10">
-                    <h4 className="text-pink-500 font-mono text-[10px] uppercase tracking-[0.5em] mb-2">Guardian of Meta</h4>
-                    <h3 className="text-white font-['Outfit'] font-black text-3xl uppercase tracking-tighter group-hover:tracking-wider transition-all duration-700">Innovator Name</h3>
-                    <div className="w-12 h-1 bg-white/60 mt-4 rounded-full group-hover:w-full transition-all duration-700"></div>
+                    <h3 className="text-white font-['Outfit'] font-black text-3xl uppercase tracking-tighter transition-all duration-700">{member.name}</h3>
+                    <div className="w-12 h-1 bg-white/60 mt-4 mb-4 rounded-full transition-all duration-700"></div>
+
+                    {/* Instagram Handle Space */}
+                    <div className="flex items-center gap-2 text-white/40 group-hover:text-pink-500 transition-colors duration-300">
+                      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                      </svg>
+                      <span className="font-mono text-[10px] tracking-widest lowercase">@{member.handle}</span>
+                    </div>
                   </div>
                 </div>
               </div>
