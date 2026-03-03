@@ -27,15 +27,17 @@ import galleryImg10 from "../assets/Gallery/_DSC0446.jpg.jpeg";
 export default function Home() {
   const [isWarping, setIsWarping] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await API.get('/registration-status');
+        const response = await API.get(`/registration-status?t=${Date.now()}`);
         setRegistrationOpen(response.data.registration_open);
+        setMaintenanceMode(response.data.maintenance_mode);
       } catch (err) {
-        console.error('Failed to fetch registration status:', err);
+        console.error('Failed to fetch site status:', err);
       }
     };
     fetchStatus();
@@ -48,12 +50,17 @@ export default function Home() {
       setRegistrationOpen(data.registration_open);
     });
 
+    socket.on('maintenanceModeUpdate', (data) => {
+      setMaintenanceMode(data.maintenance_mode);
+    });
+
     return () => {
       socket.disconnect();
     };
   }, []);
 
   const handleRegisterClick = () => {
+    if (maintenanceMode) return;
     const registerUrl = import.meta.env.VITE_REGISTER_URL;
     if (registerUrl) {
       window.location.href = registerUrl;
@@ -163,13 +170,20 @@ export default function Home() {
             />
 
             {/* Register Button - Controlled by Admin */}
-            {registrationOpen ? (
+            {maintenanceMode ? (
               <button
-                onClick={handleRegisterClick}
-                className="relative z-10 px-10 py-3 bg-white text-black font-['Outfit'] font-extrabold uppercase tracking-widest text-lg rounded-sm shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:bg-zinc-200 hover:scale-105 transition-all duration-300"
+                disabled
+                className="relative z-50 pointer-events-none px-10 py-3 bg-red-600/50 text-white/70 border border-red-500/30 font-['Outfit'] font-extrabold uppercase tracking-widest text-lg rounded-sm shadow-inner cursor-not-allowed"
               >
-                Register Now
+                Server Maintenance
               </button>
+            ) : registrationOpen ? (
+              <a
+                href={import.meta.env.VITE_REGISTER_URL || "#"}
+                className="relative z-50 pointer-events-auto px-10 py-3 bg-white text-black font-['Outfit'] font-extrabold uppercase tracking-widest text-lg rounded-sm shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:bg-zinc-200 hover:scale-105 transition-all duration-300 flex items-center justify-center"
+              >
+                Register Now !
+              </a>
             ) : (
               <button
                 disabled
