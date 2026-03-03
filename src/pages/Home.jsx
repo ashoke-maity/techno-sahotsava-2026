@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+import API from "../services/api";
 import background from "../assets/backgrounds/MetamorphosisByShubho.webp";
 import titleFont from "../assets/backgrounds/Untitled35_20260106001225.png";
 import AboutOT from "../assets/backgrounds/AboutOT.png";
@@ -24,7 +26,32 @@ import galleryImg10 from "../assets/Gallery/_DSC0446.jpg.jpeg";
 
 export default function Home() {
   const [isWarping, setIsWarping] = useState(false);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const response = await API.get('/registration-status');
+        setRegistrationOpen(response.data.registration_open);
+      } catch (err) {
+        console.error('Failed to fetch registration status:', err);
+      }
+    };
+    fetchStatus();
+
+    // Setup Socket.io
+    const serverUrl = import.meta.env.VITE_SERVER_URL.split('/technoSahotsava2026')[0];
+    const socket = io(serverUrl);
+
+    socket.on('registrationStatusUpdate', (data) => {
+      setRegistrationOpen(data.registration_open);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const handleRegisterClick = () => {
     const registerUrl = import.meta.env.VITE_REGISTER_URL;
@@ -135,13 +162,22 @@ export default function Home() {
               className="relative z-10 w-auto h-[50vh] drop-shadow-[0_0_20px_rgba(255,255,255,0.4)] object-contain -mb-20"
             />
 
-            {/* Register Button - Disabled */}
-            <button
-              disabled
-              className="relative z-10 pointer-events-none px-10 py-3 bg-gray-600/50 text-white/50 font-['Outfit'] font-extrabold uppercase tracking-widest text-lg rounded-sm shadow-inner cursor-not-allowed"
-            >
-              Registration opening soon!
-            </button>
+            {/* Register Button - Controlled by Admin */}
+            {registrationOpen ? (
+              <button
+                onClick={handleRegisterClick}
+                className="relative z-10 px-10 py-3 bg-white text-black font-['Outfit'] font-extrabold uppercase tracking-widest text-lg rounded-sm shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:bg-zinc-200 hover:scale-105 transition-all duration-300"
+              >
+                Register Now
+              </button>
+            ) : (
+              <button
+                disabled
+                className="relative z-10 pointer-events-none px-10 py-3 bg-gray-600/50 text-white/50 font-['Outfit'] font-extrabold uppercase tracking-widest text-lg rounded-sm shadow-inner cursor-not-allowed"
+              >
+                Registration opening soon!
+              </button>
+            )}
           </div>
 
           {/* Social Links on the Left (Vertical Stack) */}
