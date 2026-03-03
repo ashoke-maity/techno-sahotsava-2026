@@ -33,7 +33,11 @@ export default function Home() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await API.get(`/registration-status?t=${Date.now()}`);
+        const rawUrl = import.meta.env.VITE_SERVER_URL || '';
+        const baseUrl = rawUrl.split('/technoSahotsava2026')[0];
+        const statusUrl = `${baseUrl}/technoSahotsava2026/admin/registration-status?t=${Date.now()}`;
+
+        const response = await API.get(statusUrl);
         setRegistrationOpen(response.data.registration_open);
         setMaintenanceMode(response.data.maintenance_mode);
       } catch (err) {
@@ -43,20 +47,23 @@ export default function Home() {
     fetchStatus();
 
     // Setup Socket.io
-    const serverUrl = import.meta.env.VITE_SERVER_URL.split('/technoSahotsava2026')[0];
-    const socket = io(serverUrl);
+    const rawUrl = import.meta.env.VITE_SERVER_URL;
+    if (rawUrl) {
+      const serverUrl = rawUrl.split('/technoSahotsava2026')[0];
+      const socket = io(serverUrl);
 
-    socket.on('registrationStatusUpdate', (data) => {
-      setRegistrationOpen(data.registration_open);
-    });
+      socket.on('registrationStatusUpdate', (data) => {
+        setRegistrationOpen(data.registration_open);
+      });
 
-    socket.on('maintenanceModeUpdate', (data) => {
-      setMaintenanceMode(data.maintenance_mode);
-    });
+      socket.on('maintenanceModeUpdate', (data) => {
+        setMaintenanceMode(data.maintenance_mode);
+      });
 
-    return () => {
-      socket.disconnect();
-    };
+      return () => {
+        socket.disconnect();
+      };
+    }
   }, []);
 
   const handleRegisterClick = () => {
