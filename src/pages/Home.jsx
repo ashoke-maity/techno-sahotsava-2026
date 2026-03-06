@@ -1,15 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import API from "../services/api";
 import background from "../assets/backgrounds/MetamorphosisByShubho.webp";
 import titleFont from "../assets/backgrounds/Untitled35_20260106001225.png";
-import AboutOT from "../assets/backgrounds/AboutOT.png";
+import ThemeOT from "../assets/backgrounds/ATTOT.png";
 import featuredBg from "../assets/backgrounds/TheOneByShubho.webp";
 import GalleryOT from "../assets/backgrounds/GalleryOT.png";
 import galleryBg from "../assets/backgrounds/6.webp";
 import TeamOT from "../assets/backgrounds/MTT.OT.png";
 import teamBg from "../assets/backgrounds/Lev1.webp";
+
+// Team Member Pics
+import prithaPic from "../assets/team_pics/pritha.jpeg";
+import ashokePic from "../assets/team_pics/ashoke.jpg";
+import rohitPic from "../assets/team_pics/rohit.jpeg";
+import roshniPic from "../assets/team_pics/roshni.jpeg";
+import shreyosheePic from "../assets/team_pics/Shreyoshee.jpeg";
+import shrijitaPic from "../assets/team_pics/shrijita.png";
+import shrayanPic from "../assets/team_pics/shrayan.jpeg.png";
+import shubhadeepPic from "../assets/team_pics/shubhadeep.jpeg";
+import tathagathaPic from "../assets/team_pics/tathagatha.jpeg";
+import swastickPic from "../assets/team_pics/swastick.jpeg";
+
 import loadingVideo from "../assets/loading_screen/loading_anim.mp4";
 
 // Gallery Images
@@ -23,11 +36,13 @@ import galleryImg7 from "../assets/Gallery/_DSC0464.jpg.jpeg";
 import galleryImg8 from "../assets/Gallery/_MG_3269.jpg.jpeg";
 import galleryImg9 from "../assets/Gallery/_DSC1411.jpg.jpeg";
 import galleryImg10 from "../assets/Gallery/_DSC0446.jpg.jpeg";
+import enthusiaImg from "../assets/Gallery/enthusia.jpeg";
 
 export default function Home() {
   const [isWarping, setIsWarping] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const themeSectionRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -80,16 +95,16 @@ export default function Home() {
   };
 
   const teamMembers = [
-    { name: "Srayosee", handle: "Srayosee" },
-    { name: "Roshni", handle: "Roshni" },
-    { name: "Subhadeep", handle: "Subhadeep" },
-    { name: "Ashoke", handle: "Ashoke" },
-    { name: "Rohit", handle: "Rohit" },
-    { name: "Pritha", handle: "Pritha" },
-    { name: "Shrayan", handle: "Shrayan" },
-    { name: "Srijita", handle: "Srijita" },
-    { name: "Tathagata", handle: "Tathagata" },
-    { name: "Swastick", handle: "Swastick" },
+    { name: "Pritha", handle: "Pritha", image: prithaPic },
+    { name: "Ashoke", handle: "Ashoke", image: ashokePic },
+    { name: "Rohit", handle: "Rohit", image: rohitPic },
+    { name: "Shrayan", handle: "Shrayan", image: shrayanPic },
+    { name: "Roshni", handle: "Roshni", image: roshniPic },
+    { name: "Shreyoshee", handle: "Shreyoshee", image: shreyosheePic },
+    { name: "Shrijita", handle: "Shrijita", image: shrijitaPic },
+    { name: "Subhadeep", handle: "Subhadeep", image: shubhadeepPic },
+    { name: "Tathagata", handle: "Tathagata", image: tathagathaPic },
+    { name: "Swastick", handle: "Swastik", image: swastickPic },
   ];
 
   // Detect mobile devices and block the site with a notice
@@ -105,6 +120,64 @@ export default function Home() {
     return () => { try { mq.removeEventListener('change', handler); } catch (e) { mq.removeListener(handler); } };
   }, []);
 
+  // Continuous Bidirectional Auto-scroll (Cinematic Voyage)
+  useEffect(() => {
+    let isAnimating = false;
+
+    const handleScroll = (e) => {
+      if (isAnimating) {
+        e.preventDefault();
+        return;
+      }
+
+      const scrollPos = window.scrollY;
+      const themeTop = themeSectionRef.current?.getBoundingClientRect().top + scrollPos;
+
+      // Hero to Theme (Downwards) - Skip the massive black void
+      if (scrollPos < 150 && e.deltaY > 0) {
+        e.preventDefault();
+        startCinematicScroll(scrollPos, themeTop);
+      }
+      // Theme to Hero (Upwards) - Skip the void back to top
+      else if (scrollPos >= themeTop - 150 && scrollPos <= themeTop + 150 && e.deltaY < 0) {
+        e.preventDefault();
+        startCinematicScroll(scrollPos, 0);
+      }
+    };
+
+    function startCinematicScroll(start, target) {
+      isAnimating = true;
+      const distance = target - start;
+      const duration = 4000; // 4 seconds for that grand glide
+      let startTime = null;
+
+      function animation(currentTime) {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / duration, 1);
+
+        // Ultra-smooth ease-in-out-cubic
+        const ease = (t) => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+        const run = ease(progress) * distance + start;
+        window.scrollTo(0, run);
+
+        if (progress < 1) {
+          requestAnimationFrame(animation);
+        } else {
+          // Add a small delay after completion before allowing new triggers
+          setTimeout(() => {
+            isAnimating = false;
+          }, 800);
+        }
+      }
+      requestAnimationFrame(animation);
+    }
+
+    window.addEventListener('wheel', handleScroll, { passive: false });
+    return () => window.removeEventListener('wheel', handleScroll);
+  }, []);
+
 
   if (isMobileDevice) {
     return (
@@ -118,7 +191,7 @@ export default function Home() {
   }
 
   return (
-    <div className="relative w-full min-h-screen bg-black overflow-x-hidden font-sans">
+    <div className="relative w-full min-h-screen bg-black overflow-x-hidden">
       {/* 0. HYPERSPACE JUMP TRANSITION OVERLAY */}
       {isWarping && (
         <div className="fixed inset-0 z-[10000] bg-black flex items-center justify-center overflow-hidden">
@@ -340,7 +413,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black/30 z-0 pointer-events-none"></div>
 
           {/* 2. FEATURED SECTION */}
-          <section className="relative w-full min-h-screen flex flex-col items-center pt-10">
+          <section ref={themeSectionRef} className="relative w-full min-h-screen flex flex-col items-center pt-10">
             {/* Slight dark overlay to ensure readability while preserving artwork vibrance */}
             <div className="absolute inset-0 bg-black/35 z-0 pointer-events-none"></div>
 
@@ -349,31 +422,16 @@ export default function Home() {
               <div className="relative w-[85vw] max-w-4xl drop-shadow-[0_0_25px_rgba(255,255,255,0.4)]">
                 {/* Invisible layout controller */}
                 <img
-                  src={AboutOT}
-                  alt="Featured Events Layout"
-                  className="w-170 h-auto opacity-0"
-                />
-
-                {/* Pure White Fill Mask! */}
-                <div
-                  className="absolute inset-0 w-full h-full bg-white"
-                  style={{
-                    WebkitMaskImage: `url(${AboutOT})`,
-                    WebkitMaskSize: "contain",
-                    WebkitMaskPosition: "center",
-                    WebkitMaskRepeat: "no-repeat",
-                    maskImage: `url(${AboutOT})`,
-                    maskSize: "contain",
-                    maskPosition: "center",
-                    maskRepeat: "no-repeat",
-                  }}
+                  src={ThemeOT}
+                  alt="Our Theme Title"
+                  className="w-full h-auto"
                 />
               </div>
             </div>
 
             {/* Our Theme Description section */}
             <div className="relative w-full max-w-6xl mx-auto px-6 z-30 mt-8 pb-32 flex justify-center text-center">
-              <p className="text-white/90 text-justify font-sans text-xl md:text-2xl leading-relaxed tracking-wide font-bold drop-shadow-[0_0_15px_rgba(0,0,0,1)]">
+              <p className="text-white/90 text-justify text-xl md:text-2xl leading-relaxed tracking-wide font-bold drop-shadow-[0_0_15px_rgba(0,0,0,1)] playfair-display">
                 Technosahotsava 2026, the annual cultural fest of Techno India
                 University, stands as a distinguished celebration of artistic
                 excellence, cultural diversity, and transformative expression.
@@ -502,11 +560,12 @@ export default function Home() {
               { pos: { top: "60%", left: "5%" }, rot: "-4deg", z: "40px", img: galleryImg7 },
               { pos: { top: "65%", right: "10%" }, rot: "15deg", z: "110px", img: galleryImg8 },
               { pos: { top: "75%", left: "20%" }, rot: "-6deg", z: "70px", img: galleryImg9 },
-              { pos: { top: "85%", left: "55%" }, rot: "3deg", z: "130px", img: galleryImg10 }
+              { pos: { top: "85%", left: "55%" }, rot: "3deg", z: "130px", img: galleryImg10 },
+              { pos: { top: "92%", left: "5%" }, rot: "2deg", z: "160px", img: enthusiaImg, isLandscape: true }
             ].map((card, i) => (
               <div
                 key={i}
-                className="absolute w-[300px] md:w-[350px] z-10"
+                className={`absolute z-10 ${card.isLandscape ? "w-[450px] md:w-[600px]" : "w-[300px] md:w-[350px]"}`}
                 style={{
                   top: card.pos.top,
                   left: card.pos.left,
@@ -514,7 +573,7 @@ export default function Home() {
                   transform: `rotate(${card.rot}) translateZ(${card.z})`
                 }}
               >
-                <div className="relative w-full aspect-[4/5] bg-white/5 border border-white/20 p-2 rounded-sm shadow-2xl overflow-hidden">
+                <div className={`relative w-full ${card.isLandscape ? "aspect-video" : "aspect-[4/5]"} bg-white/5 border border-white/20 p-2 rounded-sm shadow-2xl overflow-hidden`}>
                   <div className="relative w-full h-full bg-[#0a0a0a] overflow-hidden">
                     <img src={card.img} alt="Gallery item" className="absolute inset-0 w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent z-10"></div>
@@ -614,9 +673,23 @@ export default function Home() {
             {teamMembers.map((member, i) => (
               <div key={i} className="group relative aspect-[3/4] bg-white/5 backdrop-blur-xl border border-white/10 rounded-sm overflow-hidden p-1">
                 <div className="w-full h-full border border-white/5 relative bg-black/40 flex flex-col justify-end p-8 overflow-hidden">
+                  {member.image ? (
+                    <>
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-1"></div>
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 bg-zinc-900/50 flex items-center justify-center">
+                      {/* Optional: Add a placeholder icon or text here */}
+                    </div>
+                  )}
 
                   <div className="relative z-10">
-                    <h3 className="text-white font-['Outfit'] font-black text-3xl uppercase tracking-tighter transition-all duration-700">{member.name}</h3>
+                    <h3 className="text-white berkshire-swash-regular text-3xl tracking-tighter transition-all duration-700">{member.name}</h3>
                     <div className="w-12 h-1 bg-white/60 mt-4 mb-4 rounded-full transition-all duration-700"></div>
 
                     {/* Instagram Handle Space */}
@@ -626,7 +699,7 @@ export default function Home() {
                         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                       </svg>
-                      <span className="font-mono text-[10px] tracking-widest lowercase">@{member.handle}</span>
+                      <span className="text-[10px] tracking-widest lowercase">@{member.handle}</span>
                     </div>
                   </div>
                 </div>
@@ -663,7 +736,7 @@ export default function Home() {
             scrollbar-width: none;  /* Firefox */
           }
         `}</style>
-      </section>
-    </div>
+      </section >
+    </div >
   );
 }

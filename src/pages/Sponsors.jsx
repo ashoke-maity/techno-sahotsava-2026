@@ -44,7 +44,7 @@ export default function Sponsors() {
     };
 
     return (
-        <div className="relative w-full min-h-screen bg-[#050505] overflow-x-hidden font-sans pb-32 text-white">
+        <div className="relative w-full min-h-screen bg-[#050505] overflow-x-hidden pb-32 text-white">
 
             {/* 0. HYPERSPACE JUMP TRANSITION OVERLAY */}
             {isWarping && (
