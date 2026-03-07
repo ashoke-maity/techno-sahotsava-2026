@@ -21,11 +21,6 @@ import loadingVideo from "../assets/loading_screen/loading_anim.mp4";
 import theOneByShubho from "../assets/backgrounds/TheOneByShubho.webp";
 import bg6 from "../assets/backgrounds/6.webp";
 
-// History Visuals
-import history1 from "../assets/metamorphosis_history_1_1772869952824.png";
-import history2 from "../assets/metamorphosis_history_2_1772869971414.png";
-import history3 from "../assets/metamorphosis_history_3_1772869986161.png";
-
 // Team Pics
 import prithaPic from "../assets/team_pics/pritha.jpeg";
 import ashokePic from "../assets/team_pics/ashoke.jpg";
@@ -98,6 +93,16 @@ export default function Home() {
     );
     return () => socket.disconnect();
   }, []);
+
+  // ─── WARP NAVIGATION FALLBACK ────────────────────────────────────────────────
+  useEffect(() => {
+    if (isWarping) {
+      const timer = setTimeout(() => {
+        navigate("/sponsors");
+      }, 5000); // 5 seconds fallback
+      return () => clearTimeout(timer);
+    }
+  }, [isWarping, navigate]);
 
   // ─── TRANSCENDING YEAR LOADER ─────────────────────────────────────────────
   useEffect(() => {
@@ -232,39 +237,6 @@ export default function Home() {
           { opacity: 1, y: 0, ease: "power3.out" },
           0.5,
         );
-
-      // 3. CHAPTER PINING (Fixed Stacking for Overlap)
-      const eras = gsap.utils.toArray(".history-era");
-      eras.forEach((era, i) => {
-        // Enforce stacking hierarchy (High baseline to cover Hero z-30)
-        era.style.zIndex = i + 100;
-        era.style.position = "relative";
-        era.style.backgroundColor = "black";
-
-        ScrollTrigger.create({
-          trigger: era,
-          start: "top top",
-          end: "+=120%",
-          pin: true,
-          scrub: 1,
-          pinSpacing: true,
-        });
-
-        gsap.fromTo(
-          era.querySelector(".era-content"),
-          { opacity: 0, x: -30 },
-          {
-            opacity: 1,
-            x: 0,
-            duration: 1.2,
-            scrollTrigger: {
-              trigger: era,
-              start: "top 45%",
-              toggleActions: "play none none reverse",
-            },
-          },
-        );
-      });
 
       // Special Horizontal Scroll for Gallery (Chapter 02)
       if (galleryRef.current) {
@@ -414,7 +386,8 @@ export default function Home() {
             <video
               autoPlay
               muted
-              onEnded={() => navigate("/sponsors")}
+              onEnded={() => setTimeout(() => navigate("/sponsors"), 0)}
+              onError={() => setTimeout(() => navigate("/sponsors"), 0)}
               className="absolute inset-0 w-full h-full object-cover"
               src={loadingVideo}
             />
