@@ -28,7 +28,7 @@ import rohitPic from "../assets/team_pics/rohit.jpeg";
 import roshniPic from "../assets/team_pics/roshni.jpeg";
 import shrijitaPic from "../assets/team_pics/shrijita.png";
 import shrayanPic from "../assets/team_pics/shrayan.jpeg.png";
-import shreyosheePic from "../assets/team_pics/shreyoshee.jpeg";
+import shreyosheePic from "../assets/team_pics/Shreyoshee.jpeg";
 import subhadeepPic from "../assets/team_pics/shubhadeep.jpeg";
 import swastickPic from "../assets/team_pics/swastick.jpeg";
 import tathagataPic from "../assets/team_pics/tathagatha.jpeg";
