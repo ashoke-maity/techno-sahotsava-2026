@@ -1,23 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=Germania+One&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=MedievalSharp&family=Syne:wght@400..800&family=Outfit:wght@100..900&display=swap');
 @import "tailwindcss";
 
 @layer base {
     body {
-        font-family: "Berkshire Swash", serif;
-        font-weight: 400;
-        font-style: normal;
+        font-family: 'Outfit', sans-serif;
+        background-color: #000;
+        color: #fff;
+        line-height: 1.5;
+        overflow-x: hidden;
     }
 
     h1,
     h2,
     h3,
-    h4,
-    h5,
-    h6 {
-        /* Headings stay distinct as per request */
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    h4 {
+        font-family: 'Bungee', cursive;
+        text-transform: uppercase;
+        letter-spacing: 2px;
     }
 }
+
+.font-bungee {
+    font-family: 'Bungee', cursive;
+}
+
+.font-medieval {
+    font-family: 'MedievalSharp', cursive;
+}
+
+
+
 
 .berkshire-swash-regular {
     font-family: "Berkshire Swash", serif;
@@ -27,4 +39,319 @@
 
 .playfair-display {
     font-family: 'Playfair Display', serif;
+}
+
+/* --- Premium Reveal Utilities --- */
+.reveal-wrapper {
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.reveal-content {
+    display: inline-block;
+    will-change: transform;
+}
+
+/* --- Grainy Texture Overlay --- */
+.grainy-overlay::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: soft-light;
+}
+
+/* --- Custom Cursor --- */
+.custom-cursor {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10000;
+    mix-blend-mode: difference;
+    transition: transform 0.2s ease-out;
+}
+
+.cursor-follower {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease-out, opacity 0.3s ease;
+}
+
+/* Timeline Customization */
+.timeline-track {
+    position: fixed;
+    left: 80px;
+    top: 5vh;
+    width: 2px;
+    height: 90vh;
+    border-left: 1px dashed rgba(255, 180, 100, 0.3);
+    z-index: 100;
+}
+
+.timeline-progress {
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 2px;
+    background: #FFB464;
+    transition: height 0.1s linear;
+}
+
+.divine-totem {
+    position: absolute;
+    left: -12px;
+    width: 24px;
+    height: 24px;
+    background: #000;
+    border: 2px solid #FFB464;
+    border-radius: 4px;
+    /* Diamond shape */
+    transform: rotate(45deg);
+    z-index: 101;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 15px rgba(255, 180, 100, 0.5);
+    transition: top 0.1s linear, transform 0.3s ease;
+}
+
+.totem-eye {
+    width: 60%;
+    height: 60%;
+    background: #FFB464;
+    border-radius: 50%;
+    animation: eye-blink 4s infinite;
+}
+
+@keyframes eye-blink {
+
+    0%,
+    90%,
+    100% {
+        transform: scaleY(1);
+    }
+
+    95% {
+        transform: scaleY(0.1);
+    }
+}
+
+.chapter-marker {
+    position: absolute;
+    left: -30px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker-label {
+    position: absolute;
+    left: 40px;
+    font-family: 'Bungee', cursive;
+    font-size: 8px;
+    color: #FFB464;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: 2px;
+}
+
+.chapter-marker:hover .marker-label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.marker-dot {
+    width: 6px;
+    height: 6px;
+    background: #FFB464;
+    border-radius: 50%;
+    opacity: 0.3;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.marker-dot:hover,
+.marker-active .marker-dot {
+    opacity: 1;
+    box-shadow: 0 0 10px #FFB464;
+    transform: scale(1.5);
+}
+
+
+/* Hide scrollbar */
+::-webkit-scrollbar {
+    display: none;
+}
+
+html {
+    scrollbar-width: none;
+}
+
+/* --- Sacred Skull Hero --- */
+.hero-portal {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+}
+
+.hero-bg-illo {
+    position: absolute;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 1;
+    opacity: 0.6;
+    /* Slightly more visible as requested */
+    filter: grayscale(80%);
+}
+
+.hero-face {
+    position: absolute;
+    bottom: 0;
+    top: auto;
+    width: 60vw;
+    height: 100vh;
+    z-index: 10;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.main-skull {
+    position: absolute;
+    bottom: 0;
+    top: auto;
+    left: 52%;
+    width: 90%;
+    height: 95%;
+    object-fit: cover;
+    z-index: 5;
+    transform-origin: bottom center;
+}
+
+.main-skull.visible {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.1);
+    /* Restored to max size */
+}
+
+.hero-bottom-mask {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30vh;
+    background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 40%, transparent 100%);
+    z-index: 25;
+    pointer-events: none;
+}
+
+.hero-content-reveal {
+    position: relative;
+    z-index: 15;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 1s ease 0.8s;
+}
+
+.hero-content-reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.about-reveal-layer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 10%;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+.about-reveal-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    background-color: #000;
+    will-change: opacity;
+}
+
+.about-reveal-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.8) contrast(1.1); /* Make the image pop a bit */
+}
+
+.hero-bg-illo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.5;
+}
+
+.zine-border {
+    border: 3px solid #fff;
+    box-shadow: 8px 8px 0 #fff;
+}
+
+.zine-border-accent {
+    border: 3px solid #FFB464;
+    box-shadow: 8px 8px 0 #FFB464;
+}
+
+.artifact-img {
+    filter: sepia(0.5) contrast(1.1) brightness(0.8);
+    border: 2px solid rgba(255, 180, 100, 0.1);
+}
+
+.animate-float {
+    animation: float-zine 6s ease-in-out infinite;
+}
+
+@keyframes float-zine {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0.5deg);
+    }
+
+    50% {
+        transform: translateY(-8px) rotate(-0.5deg);
+    }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
