@@ -17,7 +17,9 @@ import titleFont from "../assets/backgrounds/Untitled35_20260106001225.png";
 import ThemeOT from "../assets/backgrounds/ATTOT.png";
 import GalleryOT from "../assets/backgrounds/GalleryOT.png";
 import TeamOT from "../assets/backgrounds/MTT.OT.png";
-import loadingVideo from "../assets/loading_screen/loading_anim.mp4";
+import stage1 from "../assets/loading_screen/stage1.png";
+import stage2 from "../assets/loading_screen/stage2.png";
+import stage3 from "../assets/loading_screen/stage3.png";
 import theOneByShubho from "../assets/backgrounds/TheOneByShubho.webp";
 import bg6 from "../assets/backgrounds/6.webp";
 
@@ -32,6 +34,16 @@ import shreyosheePic from "../assets/team_pics/Shreyoshee.jpeg";
 import subhadeepPic from "../assets/team_pics/shubhadeep.jpeg";
 import swastickPic from "../assets/team_pics/swastick.jpeg";
 import tathagataPic from "../assets/team_pics/tathagatha.jpeg";
+
+// New Leaders
+import samiranImg from "../assets/leaders_img/samiran.jpeg";
+import sujoyImg from "../assets/leaders_img/sujoy.webp";
+import rinaImg from "../assets/leaders_img/rina.jpeg";
+import ishanImg from "../assets/leaders_img/ishan.jpeg";
+
+// Founder
+import founderImg from "../assets/founder_img/sayan.jpeg";
+import parthaImg from "../assets/founder_img/partha sarathi pal.jpeg";
 
 // Gallery Images
 import g1 from "../assets/Gallery/_MG_3475.jpg.jpeg";
@@ -51,6 +63,163 @@ import g14 from "../assets/Gallery/enthusia.jpeg";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ─── SUB-COMPONENTS ─────────────────────────────────────────────────────────
+
+const GalleryCard = ({ images, index }) => {
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+
+  useEffect(() => {
+    // Shuffle logic: each card changes its image at a random interval
+    const interval = setInterval(
+      () => {
+        setCurrentImgIndex((prev) => (prev + 1) % images.length);
+      },
+      3000 + Math.random() * 3000,
+    );
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  return (
+    <div className="gallery-item flex-shrink-0 w-[80vw] md:w-[45vw] aspect-video group relative overflow-hidden ring-1 ring-white/10 hover:ring-[#FFB464]/50 transition-all duration-500 rounded-sm">
+      {images.map((img, i) => (
+        <img
+          key={i}
+          src={img}
+          className={`absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-1000 ease-in-out ${i === currentImgIndex
+            ? "opacity-100 scale-100"
+            : "opacity-0 scale-110"
+            }`}
+          alt={`Memory ${index}-${i}`}
+        />
+      ))}
+      <div className="gallery-overlay absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    </div>
+  );
+};
+
+// ─── CANVAS EVOLUTION SYSTEM: COSMIC METAMORPHOSIS ───────────────────
+const MetaCanvas = ({ year }) => {
+  const canvasRef = useRef(null);
+  const starsRef = useRef([]);
+  const spiralRef = useRef([]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", resize);
+    resize();
+
+    // Procedural Cosmic Generator
+    const createCosmos = () => {
+      const stars = [];
+      const spiral = [];
+
+      // 1. Static Backdrop Stars
+      for (let i = 0; i < 200; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2,
+          alpha: Math.random(),
+          blink: Math.random() * 0.1,
+        });
+      }
+
+      // 2. Spiral Galaxy Points
+      for (let i = 0; i < 1500; i++) {
+        const angle = 0.1 * i;
+        const r = 2 * angle;
+        spiral.push({
+          angle,
+          r,
+          size: Math.random() * 1.5,
+          offset: (Math.random() - 0.5) * 50,
+          yearLimit: 2017 + (i / 1500) * 9, // Spreads growth across years
+        });
+      }
+      return { stars, spiral };
+    };
+
+    if (starsRef.current.length === 0) {
+      const { stars, spiral } = createCosmos();
+      starsRef.current = stars;
+      spiralRef.current = spiral;
+    }
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const isMetamorphosis = year >= 2024;
+      const primaryColor = isMetamorphosis ? "#FFB464" : "#ffffff";
+
+      // Draw Backdrop Stars
+      starsRef.current.forEach((s) => {
+        s.alpha += s.blink;
+        if (s.alpha > 1 || s.alpha < 0.2) s.blink *= -1;
+        ctx.fillStyle = primaryColor;
+        ctx.globalAlpha = s.alpha * 0.5;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw Spiral Galaxy
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(Date.now() * 0.0002); // Subtle slow rotation
+
+      spiralRef.current.forEach((p) => {
+        if (year < p.yearLimit) return;
+
+        const growthFactor = Math.min(1, year - p.yearLimit + 0.1);
+        const x = Math.cos(p.angle) * p.r + (Math.random() - 0.5) * 5;
+        const y = Math.sin(p.angle) * p.r + (Math.random() - 0.5) * 5;
+
+        ctx.fillStyle = primaryColor;
+        // Make the center brighter and goldier
+        if (p.r < 100 && isMetamorphosis) {
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = "#FFB464";
+          ctx.globalAlpha = 0.8 * growthFactor;
+        } else {
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = (0.4 - p.r / (canvas.width / 2)) * growthFactor;
+        }
+
+        ctx.beginPath();
+        ctx.arc(x, y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.restore();
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [year]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 z-0 pointer-events-none opacity-80"
+      style={{
+        filter: year >= 2024 ? "blur(0.5px) contrast(1.2)" : "none",
+        mixBlendMode: "screen",
+      }}
+    />
+  );
+};
+
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [heroSplit, setHeroSplit] = useState(false);
@@ -63,6 +232,7 @@ export default function Home() {
   const totemRef = useRef(null);
   const timelineProgressRef = useRef(null);
   const galleryRef = useRef(null);
+  const [showEnterButton, setShowEnterButton] = useState(false);
 
   // ─── DATA FETCHING ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -106,22 +276,27 @@ export default function Home() {
 
   // ─── TRANSCENDING YEAR LOADER ─────────────────────────────────────────────
   useEffect(() => {
-    let currentYear = 1990;
+    let currentYear = 2017;
+    setYear(currentYear);
     const interval = setInterval(() => {
       currentYear += 1;
       if (currentYear >= 2026) {
         currentYear = 2026;
         clearInterval(interval);
+        // Page is ready behind the scenes, now show the gate
         setTimeout(() => {
-          setLoading(false);
-          // Hero section is already positioned since we removed the entry animations
-          setTimeout(() => setHeroSplit(true), 100);
-        }, 600);
+          setShowEnterButton(true);
+        }, 500);
       }
       setYear(currentYear);
-    }, 35);
+    }, 600); // Slower cinematic pace for the canvas drawing
     return () => clearInterval(interval);
   }, []);
+
+  const handleEnter = () => {
+    setLoading(false);
+    setTimeout(() => setHeroSplit(true), 100);
+  };
 
   // ─── MASTER JOURNEY INIT ────────────────────────────────────────────────────
   useEffect(() => {
@@ -135,28 +310,24 @@ export default function Home() {
     }
     requestAnimationFrame(raf);
 
+    // Sync ScrollTrigger with Lenis
+    lenis.on("scroll", ScrollTrigger.update);
+
     const ctx = gsap.context(() => {
       // 1. Timeline Track + Totem Movement
-      gsap.to(timelineProgressRef.current, {
-        height: "100%",
-        ease: "none",
-        scrollTrigger: {
-          trigger: "body",
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 0.1,
-        },
-      });
-
-      gsap.to(totemRef.current, {
-        top: "100%",
-        rotation: 720,
-        ease: "none",
-        scrollTrigger: {
-          trigger: "body",
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 0.1,
+      // Using end: "max" ensures it tracks the absolute bottom of the scrollable area
+      ScrollTrigger.create({
+        start: 0,
+        end: "max",
+        scrub: true,
+        onUpdate: (self) => {
+          gsap.set(timelineProgressRef.current, {
+            height: `${self.progress * 100}%`,
+          });
+          gsap.set(totemRef.current, {
+            top: `${self.progress * 100}%`,
+            rotation: self.progress * 720,
+          });
         },
       });
 
@@ -201,9 +372,10 @@ export default function Home() {
         scrollTrigger: {
           trigger: ".hero-section",
           start: "top top",
-          end: "+=200%",
+          end: () => `+=${window.innerHeight * 5 + (galleryRef.current?.scrollWidth || 0)}`,
           pin: true,
           scrub: true,
+          invalidateOnRefresh: true,
         },
       });
 
@@ -236,54 +408,104 @@ export default function Home() {
           { opacity: 0, y: 100 },
           { opacity: 1, y: 0, ease: "power3.out" },
           0.5,
-        );
+        )
 
-      // Special Horizontal Scroll for Gallery (Chapter 02)
-      if (galleryRef.current) {
-        // Force refresh after a short delay to ensure images are measured
-        setTimeout(() => ScrollTrigger.refresh(), 1000);
-
-        const galleryTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: "#era2",
-            start: "top top",
-            end: () => `+=${galleryRef.current.scrollWidth + window.innerHeight * 2}`, 
-            pin: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
+        // STAGE 5: THE DIMENSIONAL SHUTTER (Unified Dimensional Merge)
+        // A. Background Slices arrive first to form the scenery
+        .set(".transition-strips-layer", { display: "flex", opacity: 1 })
+        .set(".gallery-reveal-layer", { 
+           opacity: 1, 
+           pointerEvents: "auto",
+        })
+        .fromTo(".transition-strip", 
+          { yPercent: 100 },
+          {
+            yPercent: 0,
+            stagger: {
+              each: 0.08,
+              from: "start"
+            },
+            duration: 1.5,
+            ease: "power2.inOut"
           }
-        });
+        )
+        // B. Old Dimension Dissolve (Fades as scenery is established)
+        .to(".about-reveal-layer", {
+          opacity: 0,
+          duration: 1.2,
+          ease: "power1.in"
+        }, 2.0)
 
-        // STEP 1: The Long Walk (Horizontal Scroll)
-        galleryTl.to(galleryRef.current, {
+        // C. Gallery Content emerges ONCE background is solidly formed
+        .to(".gallery-header, .gallery-container", {
+          opacity: 1,
+          y: 0,
+          stagger: 0.15,
+          duration: 1.2,
+          ease: "power3.out"
+        }, 2.5) // Significant delay to ensure slices have finished their primary travel
+        .set(".about-reveal-layer", { display: "none" })
+
+        // C. The Realization (Switching from Shutter background to real background)
+        .to(".gallery-bg-container", { opacity: 1, duration: 0.5 })
+        .set(".transition-strips-layer", { display: "none" })
+
+        // D. The Horizontal Explorer
+        .to(galleryRef.current, {
           x: () => -(galleryRef.current.scrollWidth - window.innerWidth),
           ease: "none",
-          duration: 4
-        });
-
-        // STEP 2: The Sudden Void (Total Blackout)
-        galleryTl.to(".gallery-header, .gallery-container, .gallery-bg-container", {
+          duration: 10
+        })
+        // G. Final transition to Highlights
+        .to(".gallery-header, .gallery-container, .gallery-bg-container", {
           opacity: 0,
-          scale: 0.9,
-          filter: "blur(20px)",
-          duration: 1,
-          ease: "power2.in"
-        }, "-=0.2"); // Slight overlap with the end of scroll
-
-        // STEP 3: The Revelation (g14 Focus)
-        galleryTl.to(".gallery-final-highlight", {
-          opacity: 1,
+          scale: 0.8,
+          filter: "blur(100px)",
           duration: 1.5,
-          ease: "power3.out"
-        }, ">")
-        .fromTo(".gallery-final-highlight img",
-          { scale: 1.6, filter: "brightness(0) contrast(1.5)" },
-          { scale: 1, filter: "brightness(1) contrast(1)", duration: 2.5, ease: "slow(0.7, 0.7, false)" },
+          ease: "power2.in",
+        })
+        .to(".gallery-final-highlight", {
+          opacity: 1,
+          scale: 1,
+          duration: 1.5,
+          ease: "power4.out",
+        }, "-=1.5")
+        .fromTo(
+          ".gallery-final-highlight img",
+          { scale: 2.2, filter: "brightness(0) contrast(4)" },
+          {
+            scale: 1,
+            filter: "brightness(1) contrast(1)",
+            duration: 1.5,
+          },
           "<"
-        )
-        // Hold the final vision
-        .to({}, { duration: 2 });
-      }
+        );
+
+      // 4. LEADERS REVEAL
+      gsap.from(".leader-circle", {
+        scrollTrigger: {
+          trigger: "#leaders",
+          start: "top 80%",
+        },
+        y: 50,
+        opacity: 0,
+        stagger: 0.15,
+        duration: 1.5,
+        ease: "power4.out",
+      });
+
+      // 4b. FOUNDER REVEAL (Independent Trigger)
+      gsap.from(".founder-content", {
+        scrollTrigger: {
+          trigger: "#founder",
+          start: "top 80%",
+        },
+        y: 40,
+        opacity: 0,
+        stagger: 0.2,
+        duration: 1.2,
+        ease: "power3.out",
+      });
 
       // 5. ARCHITECTS REVEAL
       gsap.from(".architect-card", {
@@ -299,7 +521,17 @@ export default function Home() {
       });
     });
 
+    // ─── FINAL REFRESH ───
+    const handleResize = () => ScrollTrigger.refresh();
+    window.addEventListener("resize", handleResize);
+
+    // Initial recalibrations
+    setTimeout(() => ScrollTrigger.refresh(), 500);
+    setTimeout(() => ScrollTrigger.refresh(), 2000);
+    setTimeout(() => ScrollTrigger.refresh(), 5000);
+
     return () => {
+      window.removeEventListener("resize", handleResize);
       lenis.destroy();
       ctx.revert();
     };
@@ -312,24 +544,55 @@ export default function Home() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 z-[2000] bg-black flex flex-col items-center justify-center font-medieval overflow-hidden">
-        <div className="text-white text-[20vw] leading-none opacity-10 absolute select-none tracking-tighter">
-          {year}
-        </div>
-        <div className="relative z-10 text-[#FFB464] text-9xl md:text-[12vw] leading-none drop-shadow-[0_0_60px_rgba(255,180,100,0.4)]">
-          {year}
-        </div>
-        <div className="mt-20 font-bungee text-[10px] text-white/30 tracking-[1em] uppercase animate-pulse">
-          Transcending Time
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative w-full min-h-screen bg-black selection:bg-[#FFB464] selection:text-black overflow-x-hidden">
+      {/* 1. TRANSCENDING LOADING OVERLAY: METAMORPHOSIS OF CIVILIZATION (CANVAS DRAWING) */}
+      {loading && (
+        <div className="fixed inset-0 z-[2000] bg-[#0a0a0a] flex flex-col items-center justify-center font-medieval overflow-hidden">
+          {/* Procedural Drawing Canvas */}
+          <MetaCanvas year={year} />
+
+          {/* Overlay Darkener */}
+          <div className="absolute inset-0 bg-black/40 z-[1]" />
+
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="text-white text-[15vw] leading-none opacity-5 absolute select-none tracking-tighter -top-20">
+              {year}
+            </div>
+
+            <div className="flex flex-col items-center gap-4">
+              <div className="text-[#FFB464] text-8xl md:text-[10vw] leading-none drop-shadow-[0_0_60px_rgba(255,180,100,0.4)] animate-pulse">
+                {year}
+              </div>
+
+              <div className="h-0.5 w-64 bg-white/10 relative overflow-hidden">
+                <div
+                  className="absolute inset-y-0 left-0 bg-[#FFB464] transition-all duration-500"
+                  style={{ width: `${((year - 2017) / (2026 - 2017)) * 100}%` }}
+                />
+              </div>
+
+              <div className="mt-6 font-medieval text-[12px] text-[#FFB464]/60 tracking-[0.8em] uppercase">
+                {year < 2021
+                  ? "Drawing Origin"
+                  : year < 2026
+                    ? "Evolving Progress"
+                    : "Metamorphosis Complete"}
+              </div>
+            </div>
+
+            {showEnterButton && (
+              <button
+                onClick={handleEnter}
+                className="mt-20 px-12 py-5 border-2 border-[#FFB464] text-[#FFB464] bg-black/40 backdrop-blur-xl font-bungee text-2xl hover:bg-[#FFB464] hover:text-black transition-all duration-500 animate-bounce shadow-[0_0_50px_rgba(255,180,100,0.3)] zine-border-accent uppercase tracking-widest"
+              >
+                Enter the Techno Sahotsava
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* 1. COORDINATED TIMELINE NAVIGATION TRACK */}
       <div className="timeline-track hidden md:block">
         <div ref={timelineProgressRef} className="timeline-progress" />
@@ -360,40 +623,42 @@ export default function Home() {
             onClick={() => scrollToSection("era2")}
           >
             <div className="marker-dot" />
-            <span className="marker-label">02 CHRYSALIS</span>
+            <span className="marker-label">02 GALLERY</span>
+          </div>
+          <div
+            className="chapter-marker cursor-pointer"
+            onClick={() => scrollToSection("leaders")}
+          >
+            <div className="marker-dot" />
+            <span className="marker-label">03 LEADERS</span>
+          </div>
+          <div
+            className="chapter-marker cursor-pointer"
+            onClick={() => scrollToSection("founder")}
+          >
+            <div className="marker-dot" />
+            <span className="marker-label">04 FOUNDER</span>
           </div>
           <div
             className="chapter-marker cursor-pointer"
             onClick={() => scrollToSection("builders")}
           >
             <div className="marker-dot" />
-            <span className="marker-label">03 BUILDERS</span>
+            <span className="marker-label">05 TEAM</span>
           </div>
           <div
             className="chapter-marker cursor-pointer"
             onClick={() => scrollToSection("destiny")}
           >
             <div className="marker-dot" />
-            <span className="marker-label">04 DESTINY</span>
+            <span className="marker-label">06 MORE</span>
           </div>
         </div>
       </div>
 
-      <main className="relative z-10">
-        {/* HYPERSPACE WRAP */}
-        {isWarping && (
-          <div className="fixed inset-0 z-[10000] bg-black flex items-center justify-center">
-            <video
-              autoPlay
-              muted
-              onEnded={() => setTimeout(() => navigate("/sponsors"), 0)}
-              onError={() => setTimeout(() => navigate("/sponsors"), 0)}
-              className="absolute inset-0 w-full h-full object-cover"
-              src={loadingVideo}
-            />
-          </div>
-        )}
-
+      <main
+        className={`relative z-10 transition-opacity duration-1000 ${loading ? "opacity-0 invisible" : "opacity-100 visible"}`}
+      >
         {/* HERO: SACRED SKULL PORTAL */}
         <section id="hero" className="hero-section hero-portal">
           {/* Background illustration */}
@@ -469,7 +734,7 @@ export default function Home() {
           </div>
 
           {/* IN-PLACE REVEAL: THE ABOUT CONTENT */}
-          <div className="about-reveal-layer">
+          <div className="about-reveal-layer absolute inset-0 z-[100]">
             <div className="about-reveal-bg">
               <img src={theOneByShubho} alt="" />
               <div className="absolute inset-0 bg-black/60" />
@@ -507,56 +772,264 @@ export default function Home() {
                   platform where talent transcends boundaries, ideas converge,
                   and creativity transforms into meaningful expression. Through
                   this theme, the fest celebrates growth, resilience, and the
-                  continuous evolution of excellence, making it not just an
+                    continuous evolution of excellence, making it not just an
                   event, but an inspiring experience of transformation and
                   unity.
                 </p>
               </div>
             </div>
           </div>
+
+          {/* IN-PLACE REVEAL: THE GALLERY CONTENT (CHAPTER 02) */}
+          <div className="gallery-reveal-layer absolute inset-0 opacity-0 pointer-events-none flex flex-col justify-center overflow-hidden z-[300]">
+            {/* Section Background with Overlay (Starts Hidden) */}
+            <div className="gallery-bg-container absolute inset-0 z-0 opacity-0">
+              <img
+                src={bg6}
+                className="w-full h-full object-cover opacity-80"
+                alt=""
+              />
+              <div className="absolute inset-0 bg-black/60" />
+            </div>
+
+            <div className="px-10 md:pl-56 md:pr-20 mb-8 relative z-20 gallery-header opacity-0 translate-y-10">
+              <div className="font-medieval text-[#FFB464] text-sm uppercase tracking-[0.8em] mb-4">
+                Chapter_02
+              </div>
+              <h2 className="text-5xl md:text-[8vw] font-medieval text-white uppercase tracking-tighter leading-none">
+                Gallery
+              </h2>
+            </div>
+
+            <div
+              ref={galleryRef}
+              className="gallery-container relative z-10 flex items-center gap-12 pl-10 md:pl-56 pr-[10vw] will-change-transform opacity-0 translate-y-10"
+            >
+              {[
+                [g1, g2, g3],
+                [g4, g5, g6],
+                [g7, g8, g9],
+                [g10, g11, g12],
+                [g13, g1, g5],
+                [g2, g4, g8],
+                [g3, g7, g11],
+                [g14, g10, g6]
+              ].map((imgGroup, i) => (
+                <GalleryCard key={i} images={imgGroup} index={i} />
+              ))}
+            </div>
+            {/* FINAL HIGHLIGHT - SEPARATE FROM ROWS */}
+            <div className="gallery-final-highlight absolute inset-0 z-[100] flex items-center justify-center opacity-0 pointer-events-none bg-black">
+              <div className="w-[85vw] md:w-[70vw] aspect-video relative overflow-hidden ring-2 ring-[#FFB464] shadow-[0_0_150px_rgba(255,180,100,0.6)] rounded-sm">
+                <img
+                  src={g14}
+                  className="w-full h-full object-cover"
+                  alt="Final Memory"
+                />
+                <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-black via-transparent to-transparent">
+                  <div className="font-medieval text-[#FFB464] text-xs md:text-sm uppercase tracking-[1em]">
+                    The Divine Conclusion
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* STRIP TRANSITION LAYER (The Shutter Mechanism) */}
+          <div className="transition-strips-layer absolute inset-0 z-[200] flex pointer-events-none overflow-hidden">
+            {[...Array(10)].map((_, i) => (
+              <div 
+                key={i} 
+                className="transition-strip flex-1 h-full relative overflow-hidden bg-black"
+              >
+                {/* THE BACKGROUND SLICE: Forms the new dimension behind the content */}
+                <div 
+                  className="absolute top-0 h-full w-[100vw]"
+                  style={{ left: `-${i * 10}vw` }}
+                >
+                  <img 
+                    src={bg6} 
+                    className="w-full h-full object-cover opacity-80" 
+                    alt="" 
+                  />
+                  <div className="absolute inset-0 bg-black/60" />
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
-        {/* ERA II - GALLERY SHOWCASE */}
+        {/* LEADERS SECTION */}
         <section
-          id="era2"
-          className="relative w-full h-screen bg-black overflow-hidden flex flex-col justify-center"
+          id="leaders"
+          className="relative w-full py-40 px-10 md:pl-56 md:pr-20 bg-white text-black border-b border-black/5"
         >
-          {/* Section Background with Overlay */}
-          <div className="gallery-bg-container absolute inset-0 z-0">
-              <img src={bg6} className="w-full h-full object-cover opacity-60" alt="" />
-              <div className="absolute inset-0 bg-black/60" />
+          <div className="mb-4 font-medieval text-black/50 text-sm uppercase tracking-[0.8em]">
+            Chapter_03
           </div>
-          <div className="px-10 md:pl-56 md:pr-20 mb-8 relative z-20 gallery-header">
-              <div className="font-medieval text-[#FFB464] text-sm uppercase tracking-[0.8em] mb-4">Chapter_02</div>
-              <h2 className="text-5xl md:text-[8vw] font-medieval text-white uppercase tracking-tighter leading-none">Gallery</h2>
+          <h2 className="text-6xl md:text-[8vw] font-medieval leading-none tracking-tighter text-black mb-20">
+            OUR LEADERS.
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 items-start">
+            {[
+              {
+                name: "Prof. Dr. Samiran Chattopadhyay",
+                role: "Vice Chancellor, Techno India University - West Bengal",
+                image: samiranImg,
+              },
+              {
+                name: "Prof. Dr. Sujoy Biswas",
+                role: "Director & CEO of Techno India Group & Registrar Techno India University, West Bengal",
+                image: sujoyImg,
+              },
+              {
+                name: "Prof. Dr. Rina Paladhi",
+                role: "Director of Techno India University, West Bengal",
+                image: rinaImg,
+              },
+              {
+                name: "Prof. Ishan Ghosh",
+                role: "Head of Administration, Chairman of Disciplinary commitee, Associate Dean of Student affairs of Techno India University-West Bengal",
+                image: ishanImg,
+              },
+            ].map((leader, i) => (
+              <div
+                key={i}
+                className="leader-circle flex flex-col items-center gap-6 w-full"
+              >
+                <div className="w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 rounded-full overflow-hidden border-2 border-black/10 shadow-xl">
+                  <img
+                    src={leader.image}
+                    className="w-full h-full object-cover"
+                    alt={leader.name}
+                  />
+                </div>
+                <div className="text-center w-full">
+                  <h3 className="font-medieval text-xl md:text-2xl uppercase leading-tight mb-2">
+                    {leader.name}
+                  </h3>
+                  <p className="font-outfit text-[11px] leading-relaxed text-black/50 uppercase font-bold tracking-[0.1em] px-2">
+                    {leader.role}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
-          
-          <div 
-            ref={galleryRef}
-            className="gallery-container relative z-10 flex items-center gap-12 pl-10 md:pl-56 pr-[50vw] will-change-transform"
-          >
-              {[g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13].map((img, i) => (
-                  <div key={i} className="gallery-item flex-shrink-0 w-[80vw] md:w-[45vw] aspect-video group relative overflow-hidden ring-1 ring-white/10 hover:ring-[#FFB464]/50 transition-all duration-500 rounded-sm">
-                      <img 
-                          src={img} 
-                          className="w-full h-full object-cover grayscale-[50%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out" 
-                          alt={`Memory ${i}`} 
-                      />
-                      <div className="gallery-overlay absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  </div>
-              ))}
-              {/* Buffer space at end */}
-              <div className="flex-shrink-0 w-[20vw]" />
+        </section>
+
+        {/* FOUNDER SECTION */}
+        <section
+          id="founder"
+          className="relative w-full py-40 px-10 md:pl-56 md:pr-20 bg-white text-black"
+        >
+          {/* Header Row: Minimal & Deep */}
+          <div className="founder-content flex flex-col md:flex-row justify-between items-baseline mb-20 gap-8 border-b border-black/10 pb-12">
+            <h2 className="text-5xl md:text-[8vw] font-medieval leading-none tracking-tighter text-black">
+              The Founders.
+            </h2>
+            <div className="flex flex-col items-end">
+              <span className="font-medieval text-[#FFB464] text-sm tracking-[1em] mb-2">
+                CHAPTER_04
+              </span>
+              <span className="font-outfit text-[10px] text-black/30 tracking-[0.5em] uppercase">
+                Est. Sahotsava 2017
+              </span>
+            </div>
           </div>
 
-          {/* FINAL HIGHLIGHT - SEPARATE FROM ROWS */}
-          <div className="gallery-final-highlight absolute inset-0 z-[100] flex items-center justify-center opacity-0 pointer-events-none bg-black">
-              <div className="w-[85vw] md:w-[70vw] aspect-video relative overflow-hidden ring-2 ring-[#FFB464] shadow-[0_0_150px_rgba(255,180,100,0.6)] rounded-sm">
-                  <img src={g14} className="w-full h-full object-cover" alt="Final Memory" />
-                  <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-black via-transparent to-transparent">
-                      <div className="font-medieval text-[#FFB464] text-xs md:text-sm uppercase tracking-[1em]">The Divine Conclusion</div>
-                  </div>
+          <div className="flex flex-col gap-24">
+            {/* Visual Row: Symmetrical Respect (Introduced First) */}
+            <div className="founder-content grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
+              <div className="relative group">
+                <div className="aspect-[4/5] overflow-hidden bg-gray-50 border border-black/5 shadow-2xl">
+                  <img
+                    src={founderImg}
+                    className="w-full h-full object-cover hover:scale-105 transition-all duration-700 ease-in-out"
+                    alt="Sayan Chakraborty"
+                  />
+                </div>
+                {/* Identification tag */}
+                <div className="mt-8 border-l-2 border-[#FFB464] pl-6">
+                  <h3 className="font-medieval text-3xl uppercase mb-2">
+                    Sayan Chakraborty
+                  </h3>
+                  <p className="font-outfit text-[11px] text-black/40 uppercase font-bold tracking-[0.4em]">
+                    Founder
+                  </p>
+                </div>
               </div>
+
+              <div className="relative group">
+                <div className="aspect-[4/5] overflow-hidden bg-gray-50 border border-black/5 shadow-2xl">
+                  <img
+                    src={parthaImg}
+                    className="w-full h-full object-cover hover:scale-105 transition-all duration-700 ease-in-out"
+                    alt="Partha Sarathi Pal"
+                  />
+                </div>
+                {/* Identification tag */}
+                <div className="mt-8 border-l-2 border-[#FFB464] pl-6">
+                  <h3 className="font-medieval text-3xl uppercase mb-2">
+                    Partha Sarathi Pal
+                  </h3>
+                  <p className="font-outfit text-[11px] text-black/40 uppercase font-bold tracking-[0.4em]">
+                    Founder
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Narrative Row: The Story of Origin (Supports the Visuals) */}
+            <div className="founder-content max-w-4xl">
+              <div className="font-outfit text-lg md:text-xl text-black/70 leading-relaxed text-justify space-y-10">
+                <p className="font-outfit text-2xl md:text-3xl text-black font-medium leading-snug">
+                  Great movements are never accidental — they are born from
+                  vision, courage, and an unshakable belief in the power of
+                  people.
+                </p>
+
+                <div className="space-y-8">
+                  <p>
+                    Long before Technosahotsava became the grand cultural
+                    phenomenon it is today, it existed as a dream in the mind of
+                    these individuals who believed that art, culture, and youthful
+                    passion could create something extraordinary. With this
+                    vision, they founded Team Sanskaran, laying the cultural
+                    foundation of the university and bringing together
+                    individuals who shared the same fire for creativity and
+                    expression.
+                  </p>
+
+                  <p>
+                    What started as a collective of passionate minds soon
+                    evolved into a force that would redefine the cultural
+                    landscape of the campus. From this vision emerged
+                    Technosahotsava — a celebration not merely of performances,
+                    but of identity, spirit, and artistic freedom. The historic
+                    Technosahotsava 2017 marked the dawn of this legacy,
+                    transforming a bold idea into a living tradition that
+                    continues to inspire generations of students.
+                  </p>
+
+                  <p>
+                    Their vision was never limited to organizing events; it was
+                    about creating a platform where talent could rise,
+                    creativity could flourish, and culture could be celebrated
+                    in its purest form. Today, every stage that lights up, every
+                    rhythm that echoes across the campus, and every artist who
+                    steps forward carries forward the legacy of that original
+                    dream.
+                  </p>
+
+                  <p>
+                    Technosahotsava stands today not just as a festival, but as
+                    a testament to the passion, determination, and cultural
+                    spirit ignited by the founder who dared to imagine
+                    something timeless.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -565,26 +1038,73 @@ export default function Home() {
           id="builders"
           className="relative w-full min-h-screen py-60 px-10 md:pl-56 md:pr-20 bg-white text-black"
         >
-          <div className="mb-4 font-medieval text-black/50 text-sm uppercase tracking-[0.8em]">Chapter_03</div>
+          <div className="mb-4 font-medieval text-black/50 text-sm uppercase tracking-[0.8em]">
+            Chapter_05
+          </div>
           <h2 className="text-8xl md:text-[10vw] font-medieval leading-none tracking-tighter text-black mb-32">
             MEET THE TEAM.
           </h2>
           <div className="architects-grid grid grid-cols-2 md:grid-cols-5 gap-4 border-y-2 border-black/10">
             {[
-              { name: "Pritha", id: "01", image: prithaPic },
-              { name: "Ashoke", id: "02", image: ashokePic },
-              { name: "Rohit", id: "03", image: rohitPic },
-              { name: "Roshni", id: "04", image: roshniPic },
-              { name: "Shrijita", id: "05", image: shrijitaPic },
-              { name: "Shrayan", id: "06", image: shrayanPic },
-              { name: "Shreyoshee", id: "07", image: shreyosheePic },
-              { name: "Subhadeep", id: "08", image: subhadeepPic },
-              { name: "Swastick", id: "09", image: swastickPic },
-              { name: "Tathagata", id: "10", image: tathagataPic },
+              {
+                name: "Pritha",
+                id: "01",
+                image: prithaPic,
+                insta: "pritha_sh",
+              },
+              {
+                name: "Ashoke",
+                id: "02",
+                image: ashokePic,
+                insta: "ashoke_dev",
+              },
+              { name: "Rohit", id: "03", image: rohitPic, insta: "rohit_art" },
+              {
+                name: "Roshni",
+                id: "04",
+                image: roshniPic,
+                insta: "roshni_cre",
+              },
+              {
+                name: "Shrijita",
+                id: "05",
+                image: shrijitaPic,
+                insta: "shri_jita",
+              },
+              {
+                name: "Shrayan",
+                id: "06",
+                image: shrayanPic,
+                insta: "shrayan_p",
+              },
+              {
+                name: "Shreyoshee",
+                id: "07",
+                image: shreyosheePic,
+                insta: "shreyo_shee",
+              },
+              {
+                name: "Subhadeep",
+                id: "08",
+                image: subhadeepPic,
+                insta: "subha_deep",
+              },
+              {
+                name: "Swastick",
+                id: "09",
+                image: swastickPic,
+                insta: "swas_tick",
+              },
+              {
+                name: "Tathagata",
+                id: "10",
+                image: tathagataPic,
+                insta: "tathagata_v",
+              },
             ].map((member, i) => (
               <div
                 key={member.id}
-                className="architect-card aspect-[3/4] relative overflow-hidden bg-gray-100"
+                className="architect-card aspect-[3/4] relative overflow-hidden bg-gray-100 group"
               >
                 <img
                   src={member.image}
@@ -596,9 +1116,19 @@ export default function Home() {
                     <p className="font-medieval text-xl uppercase tracking-tighter truncate">
                       {member.name}
                     </p>
-                    <p className="font-outfit text-[8px] text-black/50 uppercase tracking-[0.4em] font-bold">
-                      Custodians_{member.id}
-                    </p>
+                    <a
+                      href={`https://instagram.com/${member.insta}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 mt-1 text-black/40 hover:text-pink-600 transition-colors"
+                    >
+                      <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                      </svg>
+                      <span className="font-outfit text-[8px] uppercase font-bold tracking-widest">
+                        Instagram
+                      </span>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -612,28 +1142,99 @@ export default function Home() {
           className="h-screen bg-black flex flex-col items-center justify-center p-20 text-center relative overflow-hidden"
         >
           <h2 className="text-white font-medieval text-7xl md:text-[14vw] leading-none tracking-tighter italic opacity-10 blur-sm absolute">
-            END
+            MORE
           </h2>
-          <div className="relative z-10 space-y-24">
-            <div className="mb-4 font-medieval text-[#FFB464] text-sm uppercase tracking-[0.8em]">Chapter_04</div>
+          <div className="relative z-10 space-y-12">
+            <div className="mb-4 font-medieval text-[#FFB464] text-sm uppercase tracking-[0.8em]">
+              Chapter_06
+            </div>
             <h2 className="text-white font-medieval text-7xl md:text-[12vw] leading-none tracking-tighter shadow-[0_0_80px_rgba(255,180,100,0.3)]">
-              THE END.
+              MORE.
             </h2>
-            <div className="flex flex-col md:flex-row gap-16 justify-center">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <a
+                href="#"
+                className="group p-8 border border-white/10 bg-white/5 backdrop-blur-xl hover:border-[#FFB464] hover:bg-[#FFB464]/10 transition-all duration-500 flex flex-col items-center"
+              >
+                <span className="font-medieval text-[#FFB464] text-xs uppercase tracking-[0.5em] mb-4">
+                  Community
+                </span>
+                <span className="font-medieval text-2xl md:text-3xl text-white group-hover:scale-105 transition-transform">
+                  Become College Rep
+                </span>
+              </a>
+
+              <a
+                href="/brochure.pdf"
+                download
+                className="group p-8 border border-white/10 bg-white/5 backdrop-blur-xl hover:border-[#FFB464] hover:bg-[#FFB464]/10 transition-all duration-500 flex flex-col items-center"
+              >
+                <span className="font-medieval text-[#FFB464] text-xs uppercase tracking-[0.5em] mb-4">
+                  Literature
+                </span>
+                <span className="font-medieval text-2xl md:text-3xl text-white group-hover:scale-105 transition-transform">
+                  Preview Brochure
+                </span>
+              </a>
+
               <button
                 onClick={() => setIsWarping(true)}
-                className="px-16 py-8 bg-[#FFB464] text-black font-bungee text-2xl hover:scale-110 active:scale-95 transition-all"
+                className="group p-8 border border-white/10 bg-white/5 backdrop-blur-xl hover:border-[#FFB464] hover:bg-[#FFB464]/10 transition-all duration-500 flex flex-col items-center"
               >
-                Sponsors
+                <span className="font-medieval text-[#FFB464] text-xs uppercase tracking-[0.5em] mb-4">
+                  Allies
+                </span>
+                <span className="font-medieval text-2xl md:text-3xl text-white group-hover:scale-105 transition-transform">
+                  Our Sponsors
+                </span>
               </button>
+
+              <a
+                href="https://instagram.com/technosahotsava"
+                target="_blank"
+                className="group p-8 border border-white/10 bg-white/5 backdrop-blur-xl hover:border-[#FFB464] hover:bg-[#FFB464]/10 transition-all duration-500 flex flex-col items-center"
+              >
+                <span className="font-medieval text-[#FFB464] text-xs uppercase tracking-[0.5em] mb-4">
+                  Presence
+                </span>
+                <span className="font-medieval text-2xl md:text-3xl text-white group-hover:scale-105 transition-transform">
+                  Our Socials
+                </span>
+              </a>
+            </div>
+
+            <div className="pt-20 opacity-20">
+              <p className="font-outfit text-[10px] uppercase tracking-[1em]">
+                Coded with chaos / TIU 2026
+              </p>
             </div>
           </div>
         </section>
       </main>
 
+      {/* HYPERSPACE WRAP - Moved here to prevent PIN reconciliation errors */}
+      {isWarping && (
+        <div className="fixed inset-0 z-[10000] bg-black flex items-center justify-center">
+          <video
+            autoPlay
+            muted
+            onEnded={() => setTimeout(() => navigate("/sponsors"), 0)}
+            onError={() => setTimeout(() => navigate("/sponsors"), 0)}
+            className="absolute inset-0 w-full h-full object-cover"
+            src={loadingVideo}
+          />
+        </div>
+      )}
+
       <style>{`
         ::-webkit-scrollbar { display: none; }
         html { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .transition-strip {
+          border-left: 1px solid rgba(255,255,255,0.02);
+          will-change: transform;
+        }
       `}</style>
     </div>
   );

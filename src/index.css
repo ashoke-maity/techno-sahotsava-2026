@@ -97,7 +97,7 @@
     width: 2px;
     height: 90vh;
     border-left: 1px dashed rgba(255, 180, 100, 0.3);
-    z-index: 100;
+    z-index: 500;
 }
 
 .timeline-progress {
