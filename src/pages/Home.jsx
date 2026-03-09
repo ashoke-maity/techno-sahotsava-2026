@@ -22,6 +22,10 @@ import stage2 from "../assets/loading_screen/stage2.png";
 import stage3 from "../assets/loading_screen/stage3.png";
 import theOneByShubho from "../assets/backgrounds/TheOneByShubho.webp";
 import bg6 from "../assets/backgrounds/6.webp";
+import sahotsavaLogo from "../assets/logos/sahotsava logo posterize.png";
+import sofTigLogo from "../assets/logos/sof_tig_tiu_white.png";
+import sanskaranLogo from "../assets/logos/sanskaran logo png WHITE.png";
+import chitrakaLogo from "../assets/logos/Chitraka white logo.png";
 
 // Team Pics
 import prithaPic from "../assets/team_pics/pritha.jpeg";
@@ -34,6 +38,7 @@ import shreyosheePic from "../assets/team_pics/Shreyoshee.jpeg";
 import subhadeepPic from "../assets/team_pics/shubhadeep.jpeg";
 import swastickPic from "../assets/team_pics/swastick.jpeg";
 import tathagataPic from "../assets/team_pics/tathagatha.jpeg";
+import sanskarPic from "../assets/team_pics/sanskar.jpeg";
 
 // New Leaders
 import samiranImg from "../assets/leaders_img/samiran.jpeg";
@@ -380,27 +385,21 @@ export default function Home() {
       });
 
       heroPortalTl
-        // STAGE 1: INVISIBLE HANDLERS
-        .to(".about-reveal-layer", { opacity: 1, ease: "none" }, 0.1) // Start showing reveal layer EARLY
-
-        // STAGE 2: FACE SPLIT & BACKGROUND CROSS-FADE
+        // STAGE 1: Decisive Handover (Locked-in State)
+        .set(".about-reveal-layer", { autoAlpha: 1 }) // Immediate activation
         .to(".face-left", { x: "-100%", ease: "none" }, 0)
         .to(".face-right", { x: "100%", ease: "none" }, 0)
-        .to(".about-reveal-bg", { opacity: 1, ease: "none" }, 0.1) // Reveal the One background FAST
-
-        // STAGE 3: HERO DISSOLUTION
-        .to(
-          ".main-skull",
-          { opacity: 0, scale: 1.2, filter: "blur(20px)", ease: "power1.in" },
-          0.2,
-        )
-        .to(".hero-bg-illo", { opacity: 0, scale: 1.1, ease: "none" }, 0)
-        .to(
-          ".hero-portal-content",
-          { opacity: 0, y: -100, ease: "power1.in" },
-          0.1,
-        )
-        .to(".hero-bottom-mask", { opacity: 0, ease: "none" }, 0.1)
+        
+        // Vanish the landing page elements Decisively & Fast
+        .to(".hero-bg-illo", { autoAlpha: 0, duration: 0.1, ease: "none" }, 0)
+        .to(".hero-portal-content", { autoAlpha: 0, duration: 0.1, ease: "none" }, 0)
+        .to(".main-skull", { autoAlpha: 0, duration: 0.2, ease: "power1.in" }, 0)
+        
+        // Establish new scenery instantly beneath the sliding faces
+        .to(".about-reveal-bg", { autoAlpha: 1, duration: 0.2, ease: "none" }, 0)
+        
+        // STAGE 2: Cleanup and focus
+        .to(".hero-bottom-mask", { autoAlpha: 0, duration: 0.2, ease: "none" }, 0)
 
         // STAGE 4: CONTENT FOCUS
         .fromTo(
@@ -689,7 +688,7 @@ export default function Home() {
             className="hero-face face-left"
             style={{
               left: 0,
-              transform: "translateX(-6%)",
+              transform: "translateX(-1%)",
             }}
             alt="Left Protector"
           />
@@ -698,36 +697,50 @@ export default function Home() {
             className="hero-face face-right"
             style={{
               right: 0,
-              transform: "translateX(6%)",
+              transform: "translateX(-1.3%)",
             }}
             alt="Right Protector"
           />
 
-          {/* Reverted Hero Content - Initial Design */}
+          {/* LANDING PAGE CONTENT: Individual Control Slots */}
           <div className="relative z-[30] hero-portal-content h-full w-full flex flex-col items-center justify-center">
-            <div className="flex flex-col items-center -mt-20">
+            
+            {/* SLOT 1: SAHOTSAVA LOGO (Adjust positioning freely here) */}
+            <div className="relative translate-y-70 translate-x-[-15vw] mb-6">
+              <img 
+                src={sahotsavaLogo}
+                className="h-24 md:h-32 w-auto object-contain drop-shadow-[0_0_30px_rgba(255,180,100,0.4)]"
+                alt="Sahotsava Logo"
+              />
+            </div>
+
+            {/* SLOT 2: TECHNO SAHOTSAVA TITLE (Adjust positioning freely here) */}
+            <div className="relative translate-y-25">
               <img
                 src={titleFont}
-                className="h-[50vh] md:h-[85vh] w-auto object-contain drop-shadow-[0_0_120px_rgba(255,180,100,0.6)] animate-float"
+                className="h-[50vh] md:h-[70vh] w-auto object-contain drop-shadow-[0_0_120px_rgba(255,180,100,0.6)]"
                 alt="Sahotsava"
               />
+            </div>
 
+            {/* SLOT 3: REGISTER BUTTON (Adjust positioning freely here) */}
+            <div className="relative translate-y-[-60px] mt-8">
               {registrationOpen ? (
                 <a
                   href={import.meta.env.VITE_REGISTER_URL}
-                  className="px-12 py-4 border-2 border-[#FFB464] text-white bg-black/40 backdrop-blur-md font-bungee text-xl md:text-2xl hover:bg-[#FFB464] hover:text-black transition-all shadow-2xl zine-border-accent"
+                  className="ml-[0vw] md:ml-[1.2vw] px-12 py-4 border-2 border-[#FFB464] text-white bg-black/40 backdrop-blur-md font-bungee text-xl md:text-2xl hover:bg-[#FFB464] hover:text-black transition-all shadow-2xl zine-border-accent"
                 >
-                  CLAIM THE ERA
+                  Register Now !
                 </a>
               ) : (
                 <div className="px-10 py-3 border border-white/10 bg-black/60 backdrop-blur-sm text-[#FFB464]/30 font-bungee text-sm tracking-[0.5em] select-none">
-                  // ERA_LOCKED
+                  Opening soon !
                 </div>
               )}
             </div>
 
             <div className="absolute bottom-10 opacity-30">
-              <span className="font-medieval text-[#FFB464] text-[8px] tracking-[1.5em] uppercase">
+              <span className="font-medieval font-bold text-[#FFB464] text-[8px] tracking-[0.5em] uppercase">
                 Scroll Down
               </span>
             </div>
@@ -1101,6 +1114,12 @@ export default function Home() {
                 image: tathagataPic,
                 insta: "tathagata_v",
               },
+              {
+                name: "Sanskar",
+                id: "11",
+                image: sanskarPic,
+                insta: "sanskar_01",
+              },
             ].map((member, i) => (
               <div
                 key={member.id}
@@ -1113,7 +1132,7 @@ export default function Home() {
                 />
                 <div className="absolute inset-x-0 bottom-0 p-4 opacity-100">
                   <div className="bg-white p-3 border border-black shadow-[2px_2px_0_#000]">
-                    <p className="font-medieval text-xl uppercase tracking-tighter truncate">
+                    <p className="font-medieval text-xl uppercase tracking-tighter leading-tight whitespace-normal">
                       {member.name}
                     </p>
                     <a
@@ -1136,78 +1155,117 @@ export default function Home() {
           </div>
         </section>
 
-        {/* FINALE */}
+        {/* FINALE: THE DIVINE CROSSROADS */}
         <section
           id="destiny"
-          className="h-screen bg-black flex flex-col items-center justify-center p-20 text-center relative overflow-hidden"
+          className="relative min-h-screen bg-[#050505] py-40 px-6 md:px-20 overflow-hidden flex flex-col justify-between"
         >
-          <h2 className="text-white font-medieval text-7xl md:text-[14vw] leading-none tracking-tighter italic opacity-10 blur-sm absolute">
-            MORE
-          </h2>
-          <div className="relative z-10 space-y-12">
-            <div className="mb-4 font-medieval text-[#FFB464] text-sm uppercase tracking-[0.8em]">
-              Chapter_06
+          {/* Background Ambient Glows */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] bg-[#FFB464]/5 blur-[120px] rounded-full pointer-events-none" />
+          
+          <div className="relative z-10 w-full max-w-7xl mx-auto">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
+              <div className="space-y-4">
+                <div className="font-medieval text-[#FFB464] text-xs uppercase tracking-[1em] opacity-50">
+                  Chapter_06
+                </div>
+                <h2 className="text-white font-medieval text-6xl md:text-[10vw] leading-none tracking-tighter">
+                  MORE.
+                </h2>
+              </div>
+              <p className="font-outfit text-white/30 text-xs md:text-sm uppercase tracking-[0.4em] max-w-xs text-right leading-relaxed">
+                The journey does not end here. Explore the peripheral dimensions of the civilization.
+              </p>
             </div>
-            <h2 className="text-white font-medieval text-7xl md:text-[12vw] leading-none tracking-tighter shadow-[0_0_80px_rgba(255,180,100,0.3)]">
-              MORE.
-            </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              <a
-                href="#"
-                className="group p-8 border border-white/10 bg-white/5 backdrop-blur-xl hover:border-[#FFB464] hover:bg-[#FFB464]/10 transition-all duration-500 flex flex-col items-center"
-              >
-                <span className="font-medieval text-[#FFB464] text-xs uppercase tracking-[0.5em] mb-4">
-                  Community
-                </span>
-                <span className="font-medieval text-2xl md:text-3xl text-white group-hover:scale-105 transition-transform">
-                  Become College Rep
-                </span>
+            {/* Modular Crossroads Grid: 5 Premium Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-6">
+              
+              {/* 1. Community (Large Feature) */}
+              <a href="#" className="md:col-span-4 group relative overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FFB464]/0 via-transparent to-[#FFB464]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">01 / Community</span>
+                <h3 className="relative z-10 font-medieval text-4xl md:text-5xl text-white group-hover:translate-x-4 transition-transform duration-700 ease-out">Become College Rep</h3>
+                <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
               </a>
 
-              <a
-                href="/brochure.pdf"
-                download
-                className="group p-8 border border-white/10 bg-white/5 backdrop-blur-xl hover:border-[#FFB464] hover:bg-[#FFB464]/10 transition-all duration-500 flex flex-col items-center"
-              >
-                <span className="font-medieval text-[#FFB464] text-xs uppercase tracking-[0.5em] mb-4">
-                  Literature
-                </span>
-                <span className="font-medieval text-2xl md:text-3xl text-white group-hover:scale-105 transition-transform">
-                  Preview Brochure
-                </span>
+              {/* 2. Literature */}
+              <a href="/brochure.pdf" download className="md:col-span-2 group relative overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">02 / Literature</span>
+                <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">Preview Brochure</h3>
+                <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
               </a>
 
-              <button
-                onClick={() => setIsWarping(true)}
-                className="group p-8 border border-white/10 bg-white/5 backdrop-blur-xl hover:border-[#FFB464] hover:bg-[#FFB464]/10 transition-all duration-500 flex flex-col items-center"
-              >
-                <span className="font-medieval text-[#FFB464] text-xs uppercase tracking-[0.5em] mb-4">
-                  Allies
-                </span>
-                <span className="font-medieval text-2xl md:text-3xl text-white group-hover:scale-105 transition-transform">
-                  Our Sponsors
-                </span>
+              {/* 3. Allies */}
+              <button onClick={() => setIsWarping(true)} className="md:col-span-2 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">03 / Allies</span>
+                <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">Our Sponsors</h3>
+                <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
               </button>
 
-              <a
-                href="https://instagram.com/technosahotsava"
-                target="_blank"
-                className="group p-8 border border-white/10 bg-white/5 backdrop-blur-xl hover:border-[#FFB464] hover:bg-[#FFB464]/10 transition-all duration-500 flex flex-col items-center"
-              >
-                <span className="font-medieval text-[#FFB464] text-xs uppercase tracking-[0.5em] mb-4">
-                  Presence
-                </span>
-                <span className="font-medieval text-2xl md:text-3xl text-white group-hover:scale-105 transition-transform">
-                  Our Socials
-                </span>
+              {/* 4. Presence */}
+              <a href="https://instagram.com/technosahotsava" target="_blank" className="md:col-span-2 group relative overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">04 / Presence</span>
+                <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">Our Socials</h3>
+                <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
               </a>
-            </div>
 
-            <div className="pt-20 opacity-20">
-              <p className="font-outfit text-[10px] uppercase tracking-[1em]">
-                Coded with chaos / TIU 2026
-              </p>
+              {/* 5. Architect (Developer - New) */}
+              <a href="#" className="md:col-span-2 group relative overflow-hidden bg-[#FFB464]/5 border border-[#FFB464]/20 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464] hover:bg-[#FFB464]/10">
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">05 / Architect</span>
+                <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">The Developers</h3>
+                <div className="mt-12 h-[1px] w-12 bg-[#FFB464]/30 group-hover:w-full transition-all duration-1000 origin-left" />
+              </a>
+
+            </div>
+          </div>
+
+          {/* MINIMALIST IDENTITY FOOTER (Redesigned for balance) */}
+          <div className="relative z-10 w-full max-w-7xl mx-auto pt-12 pb-4 border-t border-white/5 mt-10 translate-y-[-0px]">
+            <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-16">
+              
+              {/* Left Identity: Institutional (Techno India) */}
+              <div className="flex flex-col items-center md:items-start group cursor-default">
+                <div className="flex items-center gap-6 mb-4 p-2 bg-white/5 rounded-lg border border-white/10">
+                  <img src={sofTigLogo} className="h-6 md:h-12 w-auto object-contain" alt="Techno India Logo" />
+                </div>
+              </div>
+
+              {/* Center Branding: The Copyright Statement */}
+              <div className="flex flex-col items-center gap-4">
+                <p className="font-outfit text-[9px] md:text-[10px] text-white/20 uppercase tracking-[0.4em] leading-relaxed text-center max-w-md">
+                  c 2026 techno sahosava. All rights Reserved | created with passion by Team Sanskaran
+                </p>
+                <div className="flex items-center gap-6 opacity-40">
+                   <div className="h-[1px] w-8 bg-white/20" />
+                   <div className="w-1 h-1 rounded-full bg-[#FFB464]" />
+                   <div className="h-[1px] w-8 bg-white/20" />
+                </div>
+              </div>
+
+              {/* Right Identity: Creative & Event Cluster */}
+              <div className="flex flex-col items-center md:items-end group cursor-default">
+                <div className="flex items-center gap-4 md:gap-8 mb-6 bg-white/5 p-4 rounded-xl border border-white/10">
+                  <img 
+                    src={sahotsavaLogo} 
+                    className="h-6 md:h-12 w-auto object-contain" 
+                    alt="Sahotsava logo" 
+                  />
+                  <div className="h-6 w-[1px] bg-white/20" />
+                  <img 
+                    src={sanskaranLogo} 
+                    className="h-10 md:h-18 w-auto object-contain" 
+                    alt="Team Sanskaran" 
+                  />
+                  <div className="h-6 w-[1px] bg-white/20" />
+                  <img 
+                    src={chitrakaLogo} 
+                    className="h-10 md:h-12 w-auto object-contain" 
+                    alt="Chitraka" 
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </section>
