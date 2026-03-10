@@ -26,6 +26,8 @@ import sahotsavaLogo from "../assets/logos/sahotsava logo posterize.png";
 import sofTigLogo from "../assets/logos/sof_tig_tiu_white.png";
 import sanskaranLogo from "../assets/logos/sanskaran logo png WHITE.png";
 import chitrakaLogo from "../assets/logos/Chitraka white logo.png";
+import loadingVideo from "../assets/loading_screen/loading_anim.mp4";
+import CollegeRepForm from "../components/CollegeRepForm";
 
 // Team Pics
 import prithaPic from "../assets/team_pics/pritha.jpeg";
@@ -225,10 +227,12 @@ const MetaCanvas = ({ year }) => {
   );
 };
 
+let hasPlayedLoading = false;
+
 export default function Home() {
-  const [loading, setLoading] = useState(true);
-  const [heroSplit, setHeroSplit] = useState(false);
-  const [year, setYear] = useState(1990);
+  const [loading, setLoading] = useState(!hasPlayedLoading);
+  const [heroSplit, setHeroSplit] = useState(hasPlayedLoading);
+  const [year, setYear] = useState(hasPlayedLoading ? 2026 : 1990);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
 
@@ -238,6 +242,7 @@ export default function Home() {
   const timelineProgressRef = useRef(null);
   const galleryRef = useRef(null);
   const [showEnterButton, setShowEnterButton] = useState(false);
+  const [isRepFormOpen, setIsRepFormOpen] = useState(false);
 
   // ─── DATA FETCHING ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -281,6 +286,7 @@ export default function Home() {
 
   // ─── TRANSCENDING YEAR LOADER ─────────────────────────────────────────────
   useEffect(() => {
+    if (!loading) return; // Skip animation if already loaded once
     let currentYear = 2017;
     setYear(currentYear);
     const interval = setInterval(() => {
@@ -296,9 +302,10 @@ export default function Home() {
       setYear(currentYear);
     }, 600); // Slower cinematic pace for the canvas drawing
     return () => clearInterval(interval);
-  }, []);
+  }, [loading]);
 
   const handleEnter = () => {
+    hasPlayedLoading = true;
     setLoading(false);
     setTimeout(() => setHeroSplit(true), 100);
   };
@@ -1183,19 +1190,25 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-6">
               
               {/* 1. Community (Large Feature) */}
-              <a href="#" className="md:col-span-4 group relative overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
+              <button 
+                onClick={() => setIsRepFormOpen(true)}
+                className="md:col-span-4 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
+              >
                 <div className="absolute inset-0 bg-gradient-to-br from-[#FFB464]/0 via-transparent to-[#FFB464]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">01 / Community</span>
                 <h3 className="relative z-10 font-medieval text-4xl md:text-5xl text-white group-hover:translate-x-4 transition-transform duration-700 ease-out">Become College Rep</h3>
                 <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
-              </a>
+              </button>
 
               {/* 2. Literature */}
-              <a href="/brochure.pdf" download className="md:col-span-2 group relative overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
+              <button 
+                onClick={() => alert("Coming soon !")}
+                className="md:col-span-2 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
+              >
                 <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">02 / Literature</span>
                 <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">Preview Brochure</h3>
                 <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
-              </a>
+              </button>
 
               {/* 3. Allies */}
               <button onClick={() => setIsWarping(true)} className="md:col-span-2 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
@@ -1205,18 +1218,46 @@ export default function Home() {
               </button>
 
               {/* 4. Presence */}
-              <a href="https://instagram.com/technosahotsava" target="_blank" className="md:col-span-2 group relative overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
+              <div className="md:col-span-2 group relative overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
                 <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">04 / Presence</span>
-                <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">Our Socials</h3>
-                <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
-              </a>
+                <h3 className="relative z-10 font-medieval text-3xl text-white mb-6">Our Socials</h3>
+                
+                <div className="relative z-10 space-y-4">
+                  <a 
+                    href="https://instagram.com/technosahotsava" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-white/40 hover:text-pink-500 transition-colors"
+                  >
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                    </svg>
+                    <span className="font-outfit text-xs uppercase tracking-widest font-bold">Instagram</span>
+                  </a>
+                  <div className="flex flex-col gap-1">
+                    <span 
+                      className="font-outfit text-xs text-white/60 select-all cursor-text py-2 px-3 bg-white/5 border border-white/5 rounded block"
+                      onClick={() => {
+                        navigator.clipboard.writeText("technosahotsava@gmail.com");
+                      }}
+                    >
+                      technosahotsava@gmail.com
+                    </span>
+                    <span className="text-[8px] text-white/20 uppercase tracking-widest pl-1">Click to select (or copy)</span>
+                  </div>
+                </div>
+                <div className="mt-8 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
+              </div>
 
               {/* 5. Architect (Developer - New) */}
-              <a href="#" className="md:col-span-2 group relative overflow-hidden bg-[#FFB464]/5 border border-[#FFB464]/20 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464] hover:bg-[#FFB464]/10">
+              <button 
+                onClick={() => navigate('/developers')}
+                className="md:col-span-2 group relative text-left overflow-hidden bg-[#FFB464]/5 border border-[#FFB464]/20 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464] hover:bg-[#FFB464]/10"
+              >
                 <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">05 / Architect</span>
                 <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">The Developers</h3>
                 <div className="mt-12 h-[1px] w-12 bg-[#FFB464]/30 group-hover:w-full transition-all duration-1000 origin-left" />
-              </a>
+              </button>
 
             </div>
           </div>
@@ -1235,7 +1276,7 @@ export default function Home() {
               {/* Center Branding: The Copyright Statement */}
               <div className="flex flex-col items-center gap-4">
                 <p className="font-outfit text-[9px] md:text-[10px] text-white/20 uppercase tracking-[0.4em] leading-relaxed text-center max-w-md">
-                  c 2026 techno sahosava. All rights Reserved | created with passion by Team Sanskaran
+                  &copy; 2026 techno sahosava. All rights Reserved | created with passion by Team Sanskaran
                 </p>
                 <div className="flex items-center gap-6 opacity-40">
                    <div className="h-[1px] w-8 bg-white/20" />
@@ -1284,6 +1325,8 @@ export default function Home() {
           />
         </div>
       )}
+
+      <CollegeRepForm isOpen={isRepFormOpen} onClose={() => setIsRepFormOpen(false)} />
 
       <style>{`
         ::-webkit-scrollbar { display: none; }
