@@ -4,6 +4,7 @@ import Home from '../pages/Home';
 import Events from '../pages/Events';
 import Sponsors from '../pages/Sponsors';
 import Developers from '../pages/Developers';
+import Results from '../pages/Results';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/events" element={<Events />} />
         <Route path="/sponsors" element={<Sponsors />} />
         <Route path="/developers" element={<Developers />} />
+        <Route path="/hall-of-fame" element={<Results />} />
       </Routes>
     </Router>
   )

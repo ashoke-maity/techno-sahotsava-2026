@@ -234,6 +234,7 @@ export default function Home() {
   const [heroSplit, setHeroSplit] = useState(hasPlayedLoading);
   const [year, setYear] = useState(hasPlayedLoading ? 2026 : 1990);
   const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [resultMode, setResultMode] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
 
   const navigate = useNavigate();
@@ -261,6 +262,7 @@ export default function Home() {
           `${serverOrigin}/technoSahotsava2026/admin/registration-status?t=${Date.now()}`,
         );
         setRegistrationOpen(response.data.registration_open);
+        setResultMode(response.data.result_mode);
       } catch (err) {
         console.error("Status fetch failed", err);
       }
@@ -270,6 +272,9 @@ export default function Home() {
     const socket = io(serverOrigin);
     socket.on("registrationStatusUpdate", (data) =>
       setRegistrationOpen(data.registration_open),
+    );
+    socket.on("resultModeUpdate", (data) =>
+      setResultMode(data.result_mode),
     );
     return () => socket.disconnect();
   }, []);
@@ -716,7 +721,7 @@ export default function Home() {
             <div className="relative translate-y-70 translate-x-[-15vw] mb-6">
               <img 
                 src={sahotsavaLogo}
-                className="h-24 md:h-32 w-auto object-contain drop-shadow-[0_0_30px_rgba(255,180,100,0.4)]"
+                className="h-24 md:h-32 lg:h-40 xl:h-48 w-auto object-contain drop-shadow-[0_0_30px_rgba(255,180,100,0.4)] transition-all duration-700"
                 alt="Sahotsava Logo"
               />
             </div>
@@ -725,22 +730,29 @@ export default function Home() {
             <div className="relative translate-y-25">
               <img
                 src={titleFont}
-                className="h-[50vh] md:h-[70vh] w-auto object-contain drop-shadow-[0_0_120px_rgba(255,180,100,0.6)]"
+                className="h-[50vh] md:h-[60vh] lg:h-[70vh] xl:h-[75vh] 2xl:h-[80vh] w-auto object-contain drop-shadow-[0_0_120px_rgba(255,180,100,0.6)] transition-all duration-700"
                 alt="Sahotsava"
               />
             </div>
 
-            {/* SLOT 3: REGISTER BUTTON (Adjust positioning freely here) */}
+            {/* SLOT 3: REGISTER / VIEW RESULT BUTTON (Adjust positioning freely here) */}
             <div className="relative translate-y-[-60px] mt-8">
-              {registrationOpen ? (
+              {resultMode ? (
+                <button
+                  onClick={() => navigate('/hall-of-fame')}
+                  className="ml-[0vw] md:ml-[1.2vw] px-8 md:px-10 py-3 border-2 border-[#FFB464] text-black bg-[#FFB464] font-bungee text-base md:text-lg hover:bg-black hover:text-[#FFB464] transition-all shadow-[0_0_50px_rgba(255,180,100,0.5)] zine-border-accent animate-pulse"
+                >
+                  View Result !
+                </button>
+              ) : registrationOpen ? (
                 <a
                   href={import.meta.env.VITE_REGISTER_URL}
-                  className="ml-[0vw] md:ml-[1.2vw] px-12 py-4 border-2 border-[#FFB464] text-white bg-black/40 backdrop-blur-md font-bungee text-xl md:text-2xl hover:bg-[#FFB464] hover:text-black transition-all shadow-2xl zine-border-accent"
+                  className="ml-[0vw] md:ml-[1.2vw] px-8 md:px-10 py-3 border-2 border-[#FFB464] text-white bg-black/40 backdrop-blur-md font-bungee text-base md:text-lg hover:bg-[#FFB464] hover:text-black transition-all shadow-2xl zine-border-accent"
                 >
                   Register Now !
                 </a>
               ) : (
-                <div className="px-10 py-3 border border-white/10 bg-black/60 backdrop-blur-sm text-[#FFB464]/30 font-bungee text-sm tracking-[0.5em] select-none">
+                <div className="px-10 py-3 border border-white/10 bg-black/60 backdrop-blur-sm text-[#FFB464]/30 font-bungee text-sm lg:text-base tracking-[0.5em] select-none">
                   Opening soon !
                 </div>
               )}
