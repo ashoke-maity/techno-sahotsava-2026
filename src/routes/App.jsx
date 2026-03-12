@@ -5,6 +5,7 @@ import Events from '../pages/Events';
 import Sponsors from '../pages/Sponsors';
 import Developers from '../pages/Developers';
 import Results from '../pages/Results';
+import CollegeRepRegistration from '../pages/CollegeRepRegistration';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/sponsors" element={<Sponsors />} />
         <Route path="/developers" element={<Developers />} />
         <Route path="/hall-of-fame" element={<Results />} />
+        <Route path="/college-rep-registration" element={<CollegeRepRegistration />} />
       </Routes>
     </Router>
   )

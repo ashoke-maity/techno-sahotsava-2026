@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import API from "../services/api";
 import { gsap } from "gsap";
@@ -27,7 +27,6 @@ import sofTigLogo from "../assets/logos/sof_tig_tiu_white.png";
 import sanskaranLogo from "../assets/logos/sanskaran logo png WHITE.png";
 import chitrakaLogo from "../assets/logos/Chitraka white logo.png";
 import loadingVideo from "../assets/loading_screen/loading_anim.mp4";
-import CollegeRepForm from "../components/CollegeRepForm";
 
 // Team Pics
 import prithaPic from "../assets/team_pics/pritha.jpeg";
@@ -230,9 +229,17 @@ const MetaCanvas = ({ year }) => {
 let hasPlayedLoading = false;
 
 export default function Home() {
-  const [loading, setLoading] = useState(!hasPlayedLoading);
-  const [heroSplit, setHeroSplit] = useState(hasPlayedLoading);
-  const [year, setYear] = useState(hasPlayedLoading ? 2026 : 1990);
+  const location = useLocation();
+  const shouldSkipLoading = hasPlayedLoading || location.state?.skipLoading;
+  
+  // Update the global flag if we are skipping via location state
+  if (location.state?.skipLoading) {
+    hasPlayedLoading = true;
+  }
+
+  const [loading, setLoading] = useState(!shouldSkipLoading);
+  const [heroSplit, setHeroSplit] = useState(shouldSkipLoading);
+  const [year, setYear] = useState(shouldSkipLoading ? 2026 : 1990);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [resultMode, setResultMode] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
@@ -1203,7 +1210,7 @@ export default function Home() {
               
               {/* 1. Community (Large Feature) */}
               <button 
-                onClick={() => setIsRepFormOpen(true)}
+                onClick={() => navigate('/college-rep-registration')}
                 className="md:col-span-4 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-[#FFB464]/0 via-transparent to-[#FFB464]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
@@ -1337,8 +1344,6 @@ export default function Home() {
           />
         </div>
       )}
-
-      <CollegeRepForm isOpen={isRepFormOpen} onClose={() => setIsRepFormOpen(false)} />
 
       <style>{`
         ::-webkit-scrollbar { display: none; }
