@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy, Search, X, Loader2, Download, Target, Sparkles, Award, ArrowLeft, Filter, ChevronDown } from 'lucide-react';
 import API from '../services/api';
+import { io } from 'socket.io-client';
 import sahotsavaLogo from '../assets/logos/sahotsava logo posterize.png';
 import sofTigLogo from '../assets/logos/sof_tig_tiu_white.png';
 import sanskaranLogo from '../assets/logos/sanskaran logo png WHITE.png';
@@ -63,20 +64,33 @@ const Results = () => {
         }
     };
 
+    const fetchResults = useCallback(async () => {
+        try {
+            const res = await API.get('/technoSahotsava2026/public/results');
+            setResults(res.data);
+        } catch (err) {
+            console.error('Failed to fetch results:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         window.scrollTo(0, 0);
-        const fetchResults = async () => {
-            try {
-                const res = await API.get('/technoSahotsava2026/public/results');
-                setResults(res.data);
-            } catch (err) {
-                console.error('Failed to fetch results:', err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchResults();
-    }, []);
+    }, [fetchResults]);
+
+    useEffect(() => {
+        const socket = io(import.meta.env.VITE_SERVER_URL || '');
+
+        socket.on('resultsUpdate', () => {
+            fetchResults();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [fetchResults]);
 
     const filteredResults = results.filter(res => {
         const matchesSearch = res.candidate_name.toLowerCase().includes(searchQuery.toLowerCase()) ||

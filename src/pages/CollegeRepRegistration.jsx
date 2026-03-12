@@ -6,7 +6,8 @@ import { auth } from '../services/firebase';
 import { 
     createUserWithEmailAndPassword,
     sendEmailVerification,
-    signOut
+    signOut,
+    signInWithEmailAndPassword
 } from 'firebase/auth';
 
 // Logo Assets
@@ -98,55 +99,166 @@ const CollegeRepRegistration = () => {
         };
     }, [fetchColleges]);
 
-    // Firebase Email Verification (Using dummy account creation to send verification email)
-    const handleVerifyEmail = async (num, email) => {
-        if (!email.includes('@')) {
-            alert("Please enter a valid email address.");
-            return;
-        }
+    // Real-time Automatic Status Detection with Silent Session Restoration
+    useEffect(() => {
+        if (!rep1.email || !rep1.email.includes('@') || !rep1.email.includes('.') || verificationStatus.rep1Email) return;
+        
+        const timer = setTimeout(async () => {
+            const email = rep1.email.toLowerCase();
+            const repKey = 'rep1Email';
+            const VERIFY_PASS = `Sahotsava26_V1_${email.split('@')[0]}`;
+            const verifiedCache = JSON.parse(localStorage.getItem('sahotsava_verified_emails') || '{}');
 
-        setIsVerifying(true);
-        try {
-            // We create a temporary firebase user to send verification email
-            const userCredential = await createUserWithEmailAndPassword(auth, email, `Sahotsava26TmpPass${Math.random()}`);
-            await sendEmailVerification(userCredential.user);
-            
-            setVerificationStep({ type: 'email', rep: num, user: userCredential.user });
-            alert(`A verification link has been sent to ${email}. Please check your inbox and click the link to verify.`);
-            
-            // Start polling for verification status
-            const checkInterval = setInterval(async () => {
-                await userCredential.user.reload();
-                if (userCredential.user.emailVerified) {
-                    clearInterval(checkInterval);
-                    const repKey = `rep${num}Email`;
+            // 1. If already in active session, just reload and confirm
+            if (auth.currentUser && auth.currentUser.email?.toLowerCase() === email) {
+                await auth.currentUser.reload();
+                if (auth.currentUser.emailVerified) {
                     setVerificationStatus(prev => ({ ...prev, [repKey]: true }));
-                    setVerificationStep(null);
-                    alert("Email verified successfully!");
-                    await signOut(auth); // Clean up
+                    verifiedCache[email] = true;
+                    localStorage.setItem('sahotsava_verified_emails', JSON.stringify(verifiedCache));
+                    return;
                 }
-            }, 3000);
-
-            // Timeout after 5 minutes
-            setTimeout(() => {
-                clearInterval(checkInterval);
-                if (verificationStep?.type === 'email') {
-                    setVerificationStep(null);
-                    alert("Email verification timed out. Please try again.");
-                }
-            }, 300000);
-
-        } catch (err) {
-            console.error("Email verification error:", err);
-            if (err.code === 'auth/email-already-in-use') {
-                alert("This email is already being verified or used. Please use a different email or wait.");
-            } else {
-                alert("Failed to send verification email.");
             }
+
+            // 2. If in cache but no session, try a silent sign-in to restore token for submission
+            if (verifiedCache[email]) {
+                try {
+                    const res = await signInWithEmailAndPassword(auth, email, VERIFY_PASS);
+                    if (res.user.emailVerified) {
+                        setVerificationStatus(prev => ({ ...prev, [repKey]: true }));
+                    }
+                } catch (e) {
+                    // Silent fail for background check to avoid console clutter
+                }
+            }
+        }, 800);
+
+        return () => clearTimeout(timer);
+    }, [rep1.email, verificationStatus.rep1Email, auth]);
+
+    useEffect(() => {
+        if (!rep2.email || !rep2.email.includes('@') || !rep2.email.includes('.') || verificationStatus.rep2Email) return;
+        
+        const timer = setTimeout(async () => {
+            const email = rep2.email.toLowerCase();
+            const repKey = 'rep2Email';
+            const VERIFY_PASS = `Sahotsava26_V1_${email.split('@')[0]}`;
+            const verifiedCache = JSON.parse(localStorage.getItem('sahotsava_verified_emails') || '{}');
+
+            if (auth.currentUser && auth.currentUser.email?.toLowerCase() === email) {
+                await auth.currentUser.reload();
+                if (auth.currentUser.emailVerified) {
+                    setVerificationStatus(prev => ({ ...prev, [repKey]: true }));
+                    verifiedCache[email] = true;
+                    localStorage.setItem('sahotsava_verified_emails', JSON.stringify(verifiedCache));
+                    return;
+                }
+            }
+
+            if (verifiedCache[email]) {
+                try {
+                    const res = await signInWithEmailAndPassword(auth, email, VERIFY_PASS);
+                    if (res.user.emailVerified) {
+                        setVerificationStatus(prev => ({ ...prev, [repKey]: true }));
+                    }
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+        }, 800);
+
+        return () => clearTimeout(timer);
+    }, [rep2.email, verificationStatus.rep2Email, auth]);
+
+    // Firebase Email Verification (Using dummy account creation to send verification email)
+    // Unified logic to check if a user is verified or needs a link sent
+    const checkVerifiedStatus = async (num, email, isManualTrigger = true) => {
+        if (!email.includes('@') || !email.includes('.')) return;
+
+        const VERIFY_PASS = `Sahotsava26_V1_${email.split('@')[0]}`;
+        const repKey = `rep${num}Email`;
+
+        if (isManualTrigger) setIsVerifying(true);
+        else return; // Stop background auto-signin to prevent 400 errors
+
+        try {
+            let activeUser = auth.currentUser;
+            
+            // If already signed in to this email, skip re-sign-in
+            if (activeUser && activeUser.email?.toLowerCase() !== email.toLowerCase()) {
+                await signOut(auth);
+                activeUser = null;
+            }
+
+            try {
+                if (!activeUser) {
+                    try {
+                        const signRes = await signInWithEmailAndPassword(auth, email, VERIFY_PASS);
+                        activeUser = signRes.user;
+                    } catch (signErr) {
+                        if (signErr.code === 'auth/user-not-found' || signErr.code === 'auth/invalid-credential') {
+                            const userCred = await createUserWithEmailAndPassword(auth, email, VERIFY_PASS);
+                            activeUser = userCred.user;
+                        } else throw signErr;
+                    }
+                }
+                
+                await activeUser.reload();
+                if (activeUser.emailVerified) {
+                    // Update Cache and State
+                    const verifiedCache = JSON.parse(localStorage.getItem('sahotsava_verified_emails') || '{}');
+                    verifiedCache[email] = true;
+                    localStorage.setItem('sahotsava_verified_emails', JSON.stringify(verifiedCache));
+                    
+                    setVerificationStatus(prev => ({ ...prev, [repKey]: true }));
+                    if (isManualTrigger) alert("Email is already verified! You can proceed.");
+                    return true;
+                } else {
+                    await sendEmailVerification(activeUser);
+                    if (isManualTrigger) alert(`A verification link has been sent to ${email}. Please check your inbox.`);
+                }
+            } catch (err) {
+                console.error("Auth Inner Error:", err);
+                if (isManualTrigger) alert("This email is already in use. If you have verified it, please try using a different browser or clear cache. Otherwise, please check your inbox for the link.");
+                return false;
+            }
+
+            if (activeUser) {
+                setVerificationStep({ type: 'email', rep: num, user: activeUser });
+                
+                const checkInterval = setInterval(async () => {
+                    await activeUser.reload();
+                    if (activeUser.emailVerified) {
+                        clearInterval(checkInterval);
+                        
+                        // Update Cache and State
+                        const verifiedCache = JSON.parse(localStorage.getItem('sahotsava_verified_emails') || '{}');
+                        verifiedCache[email] = true;
+                        localStorage.setItem('sahotsava_verified_emails', JSON.stringify(verifiedCache));
+                        
+                        setVerificationStatus(prev => ({ ...prev, [repKey]: true }));
+                        setVerificationStep(null);
+                        if (isManualTrigger) alert("Email verified successfully! You may now complete the registration.");
+                    }
+                }, 3000);
+
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    setVerificationStep(current => {
+                        if (current?.type === 'email' && current.rep === num) return null;
+                        return current;
+                    });
+                }, 300000);
+            }
+        } catch (err) {
+            console.error("Verification error:", err);
+            if (isManualTrigger) alert(err.message || "Failed to process verification.");
         } finally {
-            setIsVerifying(false);
+            if (isManualTrigger) setIsVerifying(false);
         }
     };
+
+    const handleVerifyEmail = (num, email) => checkVerifiedStatus(num, email, true);
 
     const handlePhoneChange = (repNum, name, value) => {
         const digits = value.replace(/\D/g, '').substring(0, 10);
@@ -193,9 +305,28 @@ const CollegeRepRegistration = () => {
                 whatsapp: `+91${rep.whatsapp}`
             });
 
-            const reps = [formatRep(rep1)];
-            if (hasSecondRep) {
+            const verifiedCache = JSON.parse(localStorage.getItem('sahotsava_verified_emails') || '{}');
+            const reps = [];
+            
+            // Only include reps whose email was NOT in the cache (i.e. they are newly verified)
+            // or if they are the primary rep being submitted.
+            // But based on user request: "that particular rep details will be ignore"
+            if (!verifiedCache[rep1.email?.toLowerCase()]) {
+                reps.push(formatRep(rep1));
+            }
+            
+            if (hasSecondRep && !verifiedCache[rep2.email?.toLowerCase()]) {
                 reps.push(formatRep(rep2));
+            }
+
+            // Fallback: If both are cached, we MUST send at least the current session's rep 
+            // otherwise the backend won't know which college to link to.
+            if (reps.length === 0) {
+                if (auth.currentUser?.email?.toLowerCase() === rep1.email?.toLowerCase()) {
+                    reps.push(formatRep(rep1));
+                } else if (hasSecondRep && auth.currentUser?.email?.toLowerCase() === rep2.email?.toLowerCase()) {
+                    reps.push(formatRep(rep2));
+                }
             }
 
             const response = await API.post(`${serverOrigin}/technoSahotsava2026/public/register-rep`, {
@@ -321,37 +452,39 @@ const CollegeRepRegistration = () => {
                             <h2 className="font-medieval text-2xl uppercase tracking-widest text-[#FFB464]">The First Representative</h2>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="space-y-2">
-                                <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">First Name *</label>
-                                <input 
-                                    required
-                                    type="text" 
-                                    className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
-                                    value={rep1.firstName}
-                                    onChange={(e) => setRep1({...rep1, firstName: e.target.value})}
-                                />
+                        {!verificationStatus.rep1Email && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fadeIn">
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">First Name *</label>
+                                    <input 
+                                        required={!verificationStatus.rep1Email}
+                                        type="text" 
+                                        className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                        value={rep1.firstName}
+                                        onChange={(e) => setRep1({...rep1, firstName: e.target.value})}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Middle Name</label>
+                                    <input 
+                                        type="text" 
+                                        className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                        value={rep1.middleName}
+                                        onChange={(e) => setRep1({...rep1, middleName: e.target.value})}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Last Name *</label>
+                                    <input 
+                                        required={!verificationStatus.rep1Email}
+                                        type="text" 
+                                        className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                        value={rep1.lastName}
+                                        onChange={(e) => setRep1({...rep1, lastName: e.target.value})}
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Middle Name</label>
-                                <input 
-                                    type="text" 
-                                    className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
-                                    value={rep1.middleName}
-                                    onChange={(e) => setRep1({...rep1, middleName: e.target.value})}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Last Name *</label>
-                                <input 
-                                    required
-                                    type="text" 
-                                    className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
-                                    value={rep1.lastName}
-                                    onChange={(e) => setRep1({...rep1, lastName: e.target.value})}
-                                />
-                            </div>
-                        </div>
+                        )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-2">
@@ -378,39 +511,46 @@ const CollegeRepRegistration = () => {
                                     readOnly={verificationStatus.rep1Email}
                                     className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${verificationStatus.rep1Email ? 'opacity-60 cursor-not-allowed' : ''}`}
                                     value={rep1.email}
-                                    onChange={(e) => setRep1({...rep1, email: e.target.value.toLowerCase()})}
+                                    onChange={(e) => {
+                                        setRep1({...rep1, email: e.target.value.toLowerCase()});
+                                        if (verificationStatus.rep1Email) {
+                                            setVerificationStatus(prev => ({ ...prev, rep1Email: false }));
+                                        }
+                                    }}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Phone *</label>
-                                    <div className="relative flex items-center">
-                                        <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
-                                        <input 
-                                            required
-                                            type="tel" 
-                                            className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
-                                            value={rep1.phone}
-                                            onChange={(e) => handlePhoneChange(1, 'phone', e.target.value)}
-                                            placeholder="XXXXXXXXXX"
-                                        />
+                            {!verificationStatus.rep1Email && (
+                                <div className="grid grid-cols-2 gap-4 animate-fadeIn">
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Phone *</label>
+                                        <div className="relative flex items-center">
+                                            <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
+                                            <input 
+                                                required={!verificationStatus.rep1Email}
+                                                type="tel" 
+                                                className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                value={rep1.phone}
+                                                onChange={(e) => handlePhoneChange(1, 'phone', e.target.value)}
+                                                placeholder="XXXXXXXXXX"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">WhatsApp *</label>
+                                        <div className="relative flex items-center">
+                                            <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
+                                            <input 
+                                                required={!verificationStatus.rep1Email}
+                                                type="tel" 
+                                                className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                value={rep1.whatsapp}
+                                                onChange={(e) => handlePhoneChange(1, 'whatsapp', e.target.value)}
+                                                placeholder="XXXXXXXXXX"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">WhatsApp *</label>
-                                    <div className="relative flex items-center">
-                                        <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
-                                        <input 
-                                            required
-                                            type="tel" 
-                                            className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
-                                            value={rep1.whatsapp}
-                                            onChange={(e) => handlePhoneChange(1, 'whatsapp', e.target.value)}
-                                            placeholder="XXXXXXXXXX"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
 
@@ -432,37 +572,39 @@ const CollegeRepRegistration = () => {
 
                         {hasSecondRep && (
                             <div className="space-y-8 animate-fadeIn">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    <div className="space-y-2">
-                                        <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">First Name *</label>
-                                        <input 
-                                            required={hasSecondRep}
-                                            type="text" 
-                                            className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
-                                            value={rep2.firstName}
-                                            onChange={(e) => setRep2({...rep2, firstName: e.target.value})}
-                                        />
+                                {!verificationStatus.rep2Email && (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fadeIn">
+                                        <div className="space-y-2">
+                                            <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">First Name *</label>
+                                            <input 
+                                                required={hasSecondRep && !verificationStatus.rep2Email}
+                                                type="text" 
+                                                className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                value={rep2.firstName}
+                                                onChange={(e) => setRep2({...rep2, firstName: e.target.value})}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Middle Name</label>
+                                            <input 
+                                                type="text" 
+                                                className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                value={rep2.middleName}
+                                                onChange={(e) => setRep2({...rep2, middleName: e.target.value})}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Last Name *</label>
+                                            <input 
+                                                required={hasSecondRep && !verificationStatus.rep2Email}
+                                                type="text" 
+                                                className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                value={rep2.lastName}
+                                                onChange={(e) => setRep2({...rep2, lastName: e.target.value})}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Middle Name</label>
-                                        <input 
-                                            type="text" 
-                                            className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
-                                            value={rep2.middleName}
-                                            onChange={(e) => setRep2({...rep2, middleName: e.target.value})}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Last Name *</label>
-                                        <input 
-                                            required={hasSecondRep}
-                                            type="text" 
-                                            className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
-                                            value={rep2.lastName}
-                                            onChange={(e) => setRep2({...rep2, lastName: e.target.value})}
-                                        />
-                                    </div>
-                                </div>
+                                )}
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-2">
@@ -489,39 +631,46 @@ const CollegeRepRegistration = () => {
                                             readOnly={verificationStatus.rep2Email}
                                             className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${verificationStatus.rep2Email ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             value={rep2.email}
-                                            onChange={(e) => setRep2({...rep2, email: e.target.value.toLowerCase()})}
+                                            onChange={(e) => {
+                                                setRep2({...rep2, email: e.target.value.toLowerCase()});
+                                                if (verificationStatus.rep2Email) {
+                                                    setVerificationStatus(prev => ({ ...prev, rep2Email: false }));
+                                                }
+                                            }}
                                         />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Phone *</label>
-                                            <div className="relative flex items-center">
-                                                <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
-                                                <input 
-                                                    required={hasSecondRep}
-                                                    type="tel" 
-                                                    className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
-                                                    value={rep2.phone}
-                                                    onChange={(e) => handlePhoneChange(2, 'phone', e.target.value)}
-                                                    placeholder="XXXXXXXXXX"
-                                                />
+                                    {!verificationStatus.rep2Email && (
+                                        <div className="grid grid-cols-2 gap-4 animate-fadeIn">
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Phone *</label>
+                                                <div className="relative flex items-center">
+                                                    <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
+                                                    <input 
+                                                        required={hasSecondRep && !verificationStatus.rep2Email}
+                                                        type="tel" 
+                                                        className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                        value={rep2.phone}
+                                                        onChange={(e) => handlePhoneChange(2, 'phone', e.target.value)}
+                                                        placeholder="XXXXXXXXXX"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">WhatsApp *</label>
+                                                <div className="relative flex items-center">
+                                                    <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
+                                                    <input 
+                                                        required={hasSecondRep && !verificationStatus.rep2Email}
+                                                        type="tel" 
+                                                        className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                        value={rep2.whatsapp}
+                                                        onChange={(e) => handlePhoneChange(2, 'whatsapp', e.target.value)}
+                                                        placeholder="XXXXXXXXXX"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">WhatsApp *</label>
-                                            <div className="relative flex items-center">
-                                                <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
-                                                <input 
-                                                    required={hasSecondRep}
-                                                    type="tel" 
-                                                    className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
-                                                    value={rep2.whatsapp}
-                                                    onChange={(e) => handlePhoneChange(2, 'whatsapp', e.target.value)}
-                                                    placeholder="XXXXXXXXXX"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         )}
