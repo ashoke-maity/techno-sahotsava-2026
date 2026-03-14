@@ -69,7 +69,7 @@ const Results = () => {
             const res = await API.get('/technoSahotsava2026/public/results');
             setResults(res.data);
         } catch (err) {
-            console.error('Failed to fetch results:', err);
+            // Log suppressed
         } finally {
             setIsLoading(false);
         }

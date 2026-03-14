@@ -7,19 +7,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "@studio-freight/lenis";
 
 // Assets
-import background from "../assets/backgrounds/MetamorphosisByShubho.webp";
 import skullBg from "../assets/backgrounds/3. BGwithIllustrations.webp";
 import leftFaceImg from "../assets/backgrounds/Left skull.webp";
 import rightFaceImg from "../assets/backgrounds/RS3.webp";
 import mainSkullImg from "../assets/backgrounds/Skull pro.webp";
 
 import titleFont from "../assets/backgrounds/Untitled35_20260106001225.png";
-import ThemeOT from "../assets/backgrounds/ATTOT.png";
-import GalleryOT from "../assets/backgrounds/GalleryOT.png";
-import TeamOT from "../assets/backgrounds/MTT.OT.png";
-import stage1 from "../assets/loading_screen/stage1.png";
-import stage2 from "../assets/loading_screen/stage2.png";
-import stage3 from "../assets/loading_screen/stage3.png";
 import theOneByShubho from "../assets/backgrounds/TheOneByShubho.webp";
 import bg6 from "../assets/backgrounds/6.webp";
 import sahotsavaLogo from "../assets/logos/sahotsava logo posterize.png";
@@ -88,7 +81,7 @@ const GalleryCard = ({ images, index }) => {
   return (
     <div className="gallery-item flex-shrink-0 w-[80vw] md:w-[45vw] aspect-video group relative overflow-hidden ring-1 ring-white/10 hover:ring-[#FFB464]/50 transition-all duration-500 rounded-sm">
       {images.map((img, i) => (
-        <img
+        <img loading="lazy"
           key={i}
           src={img}
           className={`absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-1000 ease-in-out ${i === currentImgIndex
@@ -271,7 +264,7 @@ export default function Home() {
         setRegistrationOpen(response.data.registration_open);
         setResultMode(response.data.result_mode);
       } catch (err) {
-        console.error("Status fetch failed", err);
+        // Log suppressed
       }
     };
     fetchStatus();
@@ -328,11 +321,12 @@ export default function Home() {
 
     const lenis = new Lenis({ duration: 2.5, lerp: 0.03, smoothWheel: true });
     lenisRef.current = lenis;
+    let rafId;
     function raf(time) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     // Sync ScrollTrigger with Lenis
     lenis.on("scroll", ScrollTrigger.update);
@@ -550,6 +544,7 @@ export default function Home() {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(rafId);
       lenis.destroy();
       ctx.revert();
     };
@@ -680,7 +675,7 @@ export default function Home() {
         {/* HERO: SACRED SKULL PORTAL */}
         <section id="hero" className="hero-section hero-portal">
           {/* Background illustration */}
-          <img
+          <img loading="lazy"
             src={skullBg}
             className="hero-bg-illo grayscale-[80%]"
             alt="Void"
@@ -691,7 +686,7 @@ export default function Home() {
           <div className="hero-bottom-mask" />
 
           {/* Main Center Skull (Skull Pro) */}
-          <img
+          <img loading="lazy"
             src={mainSkullImg}
             className="main-skull"
             alt="The Core"
@@ -702,7 +697,7 @@ export default function Home() {
           />
 
           {/* Hugging Faces (Split-Face Reveal - framing the center) */}
-          <img
+          <img loading="lazy"
             src={leftFaceImg}
             className="hero-face face-left"
             style={{
@@ -711,7 +706,7 @@ export default function Home() {
             }}
             alt="Left Protector"
           />
-          <img
+          <img loading="lazy"
             src={rightFaceImg}
             className="hero-face face-right"
             style={{
@@ -726,7 +721,7 @@ export default function Home() {
             
             {/* SLOT 1: SAHOTSAVA LOGO (Adjust positioning freely here) */}
             <div className="relative translate-y-70 translate-x-[-15vw] mb-6">
-              <img 
+              <img loading="lazy" 
                 src={sahotsavaLogo}
                 className="h-24 md:h-32 lg:h-40 xl:h-48 w-auto object-contain drop-shadow-[0_0_30px_rgba(255,180,100,0.4)] transition-all duration-700"
                 alt="Sahotsava Logo"
@@ -735,7 +730,7 @@ export default function Home() {
 
             {/* SLOT 2: TECHNO SAHOTSAVA TITLE (Adjust positioning freely here) */}
             <div className="relative translate-y-25">
-              <img
+              <img loading="lazy"
                 src={titleFont}
                 className="h-[50vh] md:h-[60vh] lg:h-[70vh] xl:h-[75vh] 2xl:h-[80vh] w-auto object-contain drop-shadow-[0_0_120px_rgba(255,180,100,0.6)] transition-all duration-700"
                 alt="Sahotsava"
@@ -775,7 +770,7 @@ export default function Home() {
           {/* IN-PLACE REVEAL: THE ABOUT CONTENT */}
           <div className="about-reveal-layer absolute inset-0 z-[100]">
             <div className="about-reveal-bg">
-              <img src={theOneByShubho} alt="" />
+              <img loading="lazy" src={theOneByShubho} alt="" />
               <div className="absolute inset-0 bg-black/60" />
             </div>
 
@@ -823,7 +818,7 @@ export default function Home() {
           <div className="gallery-reveal-layer absolute inset-0 opacity-0 pointer-events-none flex flex-col justify-center overflow-hidden z-[300]">
             {/* Section Background with Overlay (Starts Hidden) */}
             <div className="gallery-bg-container absolute inset-0 z-0 opacity-0">
-              <img
+              <img loading="lazy"
                 src={bg6}
                 className="w-full h-full object-cover opacity-80"
                 alt=""
@@ -860,7 +855,7 @@ export default function Home() {
             {/* FINAL HIGHLIGHT - SEPARATE FROM ROWS */}
             <div className="gallery-final-highlight absolute inset-0 z-[100] flex items-center justify-center opacity-0 pointer-events-none bg-black">
               <div className="w-[85vw] md:w-[70vw] aspect-video relative overflow-hidden ring-2 ring-[#FFB464] shadow-[0_0_150px_rgba(255,180,100,0.6)] rounded-sm">
-                <img
+                <img loading="lazy"
                   src={g14}
                   className="w-full h-full object-cover"
                   alt="Final Memory"
@@ -886,7 +881,7 @@ export default function Home() {
                   className="absolute top-0 h-full w-[100vw]"
                   style={{ left: `-${i * 10}vw` }}
                 >
-                  <img 
+                  <img loading="lazy" 
                     src={bg6} 
                     className="w-full h-full object-cover opacity-80" 
                     alt="" 
@@ -937,7 +932,7 @@ export default function Home() {
                 className="leader-circle flex flex-col items-center gap-6 w-full"
               >
                 <div className="w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 rounded-full overflow-hidden border-2 border-black/10 shadow-xl">
-                  <img
+                  <img loading="lazy"
                     src={leader.image}
                     className="w-full h-full object-cover"
                     alt={leader.name}
@@ -981,7 +976,7 @@ export default function Home() {
             <div className="founder-content grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
               <div className="relative group">
                 <div className="aspect-[4/5] overflow-hidden bg-gray-50 border border-black/5 shadow-2xl">
-                  <img
+                  <img loading="lazy"
                     src={founderImg}
                     className="w-full h-full object-cover hover:scale-105 transition-all duration-700 ease-in-out"
                     alt="Sayan Chakraborty"
@@ -1000,7 +995,7 @@ export default function Home() {
 
               <div className="relative group">
                 <div className="aspect-[4/5] overflow-hidden bg-gray-50 border border-black/5 shadow-2xl">
-                  <img
+                  <img loading="lazy"
                     src={parthaImg}
                     className="w-full h-full object-cover hover:scale-105 transition-all duration-700 ease-in-out"
                     alt="Partha Sarathi Pal"
@@ -1151,7 +1146,7 @@ export default function Home() {
                 key={member.id}
                 className="architect-card aspect-[3/4] relative overflow-hidden bg-gray-100 group"
               >
-                <img
+                <img loading="lazy"
                   src={member.image}
                   className="w-full h-full object-cover"
                   alt={member.name}
@@ -1288,7 +1283,7 @@ export default function Home() {
               {/* Left Identity: Institutional (Techno India) */}
               <div className="flex flex-col items-center md:items-start group cursor-default">
                 <div className="flex items-center gap-6 mb-4 p-2 bg-white/5 rounded-lg border border-white/10">
-                  <img src={sofTigLogo} className="h-6 md:h-12 w-auto object-contain" alt="Techno India Logo" />
+                  <img loading="lazy" src={sofTigLogo} className="h-6 md:h-12 w-auto object-contain" alt="Techno India Logo" />
                 </div>
               </div>
 
@@ -1307,19 +1302,19 @@ export default function Home() {
               {/* Right Identity: Creative & Event Cluster */}
               <div className="flex flex-col items-center md:items-end group cursor-default">
                 <div className="flex items-center gap-4 md:gap-8 mb-6 bg-white/5 p-4 rounded-xl border border-white/10">
-                  <img 
+                  <img loading="lazy" 
                     src={sahotsavaLogo} 
                     className="h-6 md:h-12 w-auto object-contain" 
                     alt="Sahotsava logo" 
                   />
                   <div className="h-6 w-[1px] bg-white/20" />
-                  <img 
+                  <img loading="lazy" 
                     src={sanskaranLogo} 
                     className="h-10 md:h-18 w-auto object-contain" 
                     alt="Team Sanskaran" 
                   />
                   <div className="h-6 w-[1px] bg-white/20" />
-                  <img 
+                  <img loading="lazy" 
                     src={chitrakaLogo} 
                     className="h-10 md:h-12 w-auto object-contain" 
                     alt="Chitraka" 

@@ -72,7 +72,7 @@ const CollegeRepRegistration = () => {
             }
             setColleges(fetchedColleges);
         } catch (err) {
-            console.error("Failed to fetch colleges:", err);
+            // Log suppressed
         } finally {
             setIsLoadingColleges(false);
         }
@@ -161,9 +161,9 @@ const CollegeRepRegistration = () => {
                     if (res.user.emailVerified) {
                         setVerificationStatus(prev => ({ ...prev, [repKey]: true }));
                     }
-                } catch (e) {
-                    // Silent fail
-                }
+                } catch (err) {
+        // Silent error handle for production stability
+      }
             }
         }, 800);
 
@@ -218,7 +218,6 @@ const CollegeRepRegistration = () => {
                     if (isManualTrigger) alert(`A verification link has been sent to ${email}. Please check your inbox.`);
                 }
             } catch (err) {
-                console.error("Auth Inner Error:", err);
                 if (isManualTrigger) alert("This email is already in use. If you have verified it, please try using a different browser or clear cache. Otherwise, please check your inbox for the link.");
                 return false;
             }
@@ -251,7 +250,6 @@ const CollegeRepRegistration = () => {
                 }, 300000);
             }
         } catch (err) {
-            console.error("Verification error:", err);
             if (isManualTrigger) alert(err.message || "Failed to process verification.");
         } finally {
             if (isManualTrigger) setIsVerifying(false);
@@ -342,7 +340,6 @@ const CollegeRepRegistration = () => {
                 alert(response.data.message || "Registration failed. Please try again.");
             }
         } catch (err) {
-            console.error("Form Submission Error:", err);
             alert(err.response?.data?.message || "Internal server error. Registration could not be processed.");
         } finally {
             setIsSubmitting(false);
