@@ -23,23 +23,23 @@ const Developers = () => {
     {
       role: "Digital Artists",
       members: [
-        { name: "Subhadeep", image: subhadeepPic, insta: "subha_deep" },
-        { name: "Suprit", image: supritPic, insta: "sup_rit" },
-        { name: "Ankita", image: ankitaPic, insta: "ankita_dg" },
+        { name: "Shubhodeep", image: subhadeepPic, insta: "https://www.instagram.com/thesuperartist._?igsh=Z3I4Y2hodmhqeWFn" },
+        { name: "Suprit", image: supritPic, insta: "https://www.instagram.com/ig_suprit?igsh=MWo5ZnZzc2o1dmh0cA==" },
+        { name: "Ankita", image: ankitaPic, insta: "https://www.instagram.com/_ankiii.hopeshine_?igsh=MTcwNzE1Yjd3ZmxjOA==" },
       ]
     },
     {
       role: "UI & Development",
       members: [
-        { name: "Anirbaan", image: anirbaanPic, insta: "anir_baan" },
-        { name: "Ashoke", image: ashokePic, insta: "ashoke_dev" },
+        { name: "Anirbaan", image: anirbaanPic, insta: "https://www.instagram.com/anirbaansarkar?igsh=MTZoenVoandtdjdkYQ==" },
+        { name: "Ashoke", image: ashokePic, insta: "https://www.instagram.com/ashokemaity_?igsh=OTFqaGswdjY1ZnEx" },
       ]
     },
     {
       role: "Video Animations",
       members: [
-        { name: "Shounak", image: shounakPic, insta: "shou_nak" },
-        { name: "Adhiraj", image: adhirajPic, insta: "adhira_aj" },
+        { name: "Shounak", image: shounakPic, insta: "https://www.instagram.com/thegraphicsboy0.4?igsh=MXNpMW9scjd3c2N3cA==" },
+        { name: "Adhiraj", image: adhirajPic, insta: "#" },
       ]
     }
   ];
@@ -54,7 +54,7 @@ const Developers = () => {
         <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        <span className="uppercase tracking-widest text-[10px] font-bold">Back to Civilization</span>
+        <span className="uppercase tracking-widest text-[10px] font-bold">Back to Home</span>
       </button>
 
       <div className="max-w-7xl mx-auto pt-20">

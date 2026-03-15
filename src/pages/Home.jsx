@@ -952,91 +952,126 @@ export default function Home() {
                 name: "Pritha",
                 id: "01",
                 image: prithaPic,
-                insta: "pritha_sh",
+                insta: "https://www.instagram.com/_.p_r_i_t_h_a._?igsh=MWUxMHd6d2xpdndmcQ==",
+                contact: "+91 76996 92411",
               },
               {
                 name: "Ashoke",
                 id: "02",
                 image: ashokePic,
-                insta: "ashoke_dev",
+                insta: "https://www.instagram.com/ashokemaity_?igsh=OTFqaGswdjY1ZnEx",
+                contact: "+91 8597347423",
               },
-              { name: "Rohit", id: "03", image: rohitPic, insta: "rohit_art" },
+              { 
+                name: "Rohit", 
+                id: "03", 
+                image: rohitPic, 
+                insta: "https://www.instagram.com/rohit_kumar_samanta?igsh=d251NjhvM2Q5aXow",
+                contact: "+91 6289 896197",
+              },
               {
                 name: "Roshni",
                 id: "04",
                 image: roshniPic,
-                insta: "roshni_cre",
+                insta: "https://www.instagram.com/rosshniii18?igsh=MWo1bG43dDlzdmZ5dg==",
+                contact: "+91 91233 48219",
               },
               {
                 name: "Shrijita",
                 id: "05",
                 image: shrijitaPic,
-                insta: "shri_jita",
+                insta: "https://www.instagram.com/shree_chakraborty06?igsh=MXJ6d3Q4NHd1eG0zYw==",
+                // contact: "+91 00000 00000",
               },
               {
                 name: "Shrayan",
                 id: "06",
                 image: shrayanPic,
-                insta: "shrayan_p",
+                insta: "https://www.instagram.com/shrayan._.music?igsh=MXNnc2UxaGJua2QzZw==",
+                contact: "+91 70474 80580",
               },
               {
                 name: "Shreyoshee",
                 id: "07",
                 image: shreyosheePic,
-                insta: "shreyo_shee",
+                insta: "https://www.instagram.com/estella_seed_78?igsh=bWNjYm04ZWUyd2gz",
+                // contact: "+91 00000 00000",
               },
               {
                 name: "Subhadeep",
                 id: "08",
                 image: subhadeepPic,
-                insta: "subha_deep",
+                insta: "https://www.instagram.com/s_u_b_h_a_d_e_e_p.1?igsh=M3R5Nzd0MXo0aXQ2",
+                // contact: "+91 00000 00000",
               },
               {
                 name: "Swastick",
                 id: "09",
                 image: swastickPic,
-                insta: "swas_tick",
+                insta: "https://www.instagram.com/itz___swastick?igsh=MWNobXI2ZDVremxqOQ==",
+                // contact: "+91 00000 00000",
               },
               {
                 name: "Tathagata",
                 id: "10",
                 image: tathagataPic,
-                insta: "tathagata_v",
+                insta: "https://www.instagram.com/tathagat19?igsh=MWl2OTc2OHE4OHp3aA==",
+                // contact: "+91 00000 00000",
               },
               {
                 name: "Sanskar",
                 id: "11",
                 image: sanskarPic,
-                insta: "sanskar_01",
+                insta: "https://www.instagram.com/sanskar.2501?igsh=MzdlcWxwdThmY21i",
+                // contact: "+91 00000 00000",
               },
             ].map((member, i) => (
               <div
                 key={member.id}
-                className="architect-card aspect-[3/4] relative overflow-hidden bg-gray-100 group"
+                className="architect-card aspect-[3/4] relative overflow-hidden bg-white group cursor-crosshair shadow-sm hover:shadow-2xl transition-all duration-500"
               >
                 <img loading="lazy"
                   src={member.image}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 ease-in-out scale-100 group-hover:scale-110"
                   alt={member.name}
                 />
-                <div className="absolute inset-x-0 bottom-0 p-4 opacity-100">
-                  <div className="bg-white p-3 border border-black shadow-[2px_2px_0_#000]">
-                    <p className="font-medieval text-xl uppercase tracking-tighter leading-tight whitespace-normal">
+                
+                {/* ID Totem */}
+                <div className="absolute top-4 left-4 z-10 font-medieval text-[10px] opacity-10 group-hover:opacity-100 transition-opacity bg-white/80 px-2 py-1 rounded-sm text-black">
+                  CHAPTER_05 / {member.id}
+                </div>
+
+                <div className="absolute inset-x-0 bottom-0 p-4 translate-y-6 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] z-20">
+                  <div className="bg-white/95 backdrop-blur-xl p-5 border border-black shadow-[8px_8px_0_rgba(0,0,0,1)]">
+                    <p className="font-medieval text-2xl uppercase tracking-[0.1em] leading-tight mb-4 border-b border-black/10 pb-2">
                       {member.name}
                     </p>
-                    <a
-                      href={`https://instagram.com/${member.insta}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 mt-1 text-black/40 hover:text-pink-600 transition-colors"
-                    >
-                      <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                      </svg>
-                      <span className="font-outfit text-[8px] uppercase font-bold tracking-widest">
-                        Instagram
-                      </span>
-                    </a>
+                    <div className="flex flex-col gap-3">
+                      <a
+                        href={member.insta}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 text-black/50 hover:text-[#E4405F] transition-all duration-300 group/insta"
+                      >
+                        <svg className="w-4 h-4 fill-current transition-transform group-hover/insta:rotate-12 group-hover/insta:scale-110" viewBox="0 0 24 24">
+                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                        </svg>
+                        <span className="font-outfit text-[10px] uppercase font-bold tracking-[0.3em]">
+                          Follow On Instagram
+                        </span>
+                      </a>
+                      <a
+                        href={`tel:${member.contact.replace(/\s+/g, '')}`}
+                        className="flex items-center gap-3 text-black/50 hover:text-green-600 transition-all duration-300 group/call"
+                      >
+                        <svg className="w-4 h-4 fill-current transition-transform group-hover/call:scale-110 group-hover/call:-rotate-12" viewBox="0 0 24 24">
+                          <path d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z" />
+                        </svg>
+                        <span className="font-outfit text-[10px] uppercase font-bold tracking-[0.3em]">
+                          {member.contact}
+                        </span>
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
