@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bungee&family=MedievalSharp&family=Syne:wght@400..800&family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=MedievalSharp&family=Syne:wght@400..800&family=Outfit:wght@100..900&family=Cinzel:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap');
 @import "tailwindcss";
 
 @layer base {
@@ -355,3 +355,166 @@ html {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+/* --- Simple 2D Preloader Styles --- */
+#preloader-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: radial-gradient(circle at center, #0c1222 0%, #000 70%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 1.5s ease-out, filter 1.5s ease-out;
+  overflow: hidden;
+}
+
+#preloader-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: -100%;
+  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  filter: contrast(120%) brightness(100%);
+  opacity: 0.15;
+  pointer-events: none;
+  animation: noiseAnim 0.2s infinite;
+}
+
+#preloader-wrapper::after {
+  content: "";
+  position: absolute;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(100, 180, 255, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: auraMove 15s infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes noiseAnim {
+  0% { transform: translate(0,0); }
+  10% { transform: translate(-1%,-1%); }
+  20% { transform: translate(1%,1%); }
+  30% { transform: translate(-2%,1%); }
+}
+
+@keyframes auraMove {
+  from { transform: translate(-10%, -10%); }
+  to { transform: translate(10%, 10%); }
+}
+
+#preloader-wrapper.exit {
+  opacity: 0;
+  filter: blur(20px) brightness(2);
+  pointer-events: none;
+}
+
+#year-wrap-preloader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 5;
+}
+
+#year-num-preloader {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: clamp(5rem, 15vw, 12rem);
+  color: #fff;
+  text-shadow: 0 0 50px rgba(100, 180, 255, 0.6), 0 0 100px rgba(100, 180, 255, 0.2);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  animation: yearAlive 4s ease-in-out infinite alternate;
+}
+
+@keyframes yearAlive {
+  from { transform: scale(1); filter: brightness(1); }
+  to { transform: scale(1.03); filter: brightness(1.2); }
+}
+
+#timeline-wrap-preloader {
+  width: min(400px, 80vw);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  position: absolute;
+  bottom: 15vh;
+  left: 50%;
+  transform: translateX(-50%);
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+#tl-fill-preloader {
+  height: 100%;
+  background: #fff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+  transition: width 0.3s ease-out;
+}
+
+#enter-wrap-preloader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 10;
+}
+
+#enter-wrap-preloader.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+#enter-btn-preloader {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1.2rem 4rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(15px);
+  border-radius: 2px;
+}
+
+#enter-btn-preloader:hover {
+  background: #fff;
+  border-color: #fff;
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.etx {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.9rem;
+  letter-spacing: 0.6em;
+  text-transform: uppercase;
+  transition: color 0.4s ease;
+}
+
+#enter-btn-preloader:hover .etx {
+  color: #000;
+}
+
+.epulse {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: pulse2d 2.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse2d {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+

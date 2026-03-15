@@ -96,128 +96,6 @@ const GalleryCard = ({ images, index }) => {
   );
 };
 
-// ─── CANVAS EVOLUTION SYSTEM: COSMIC METAMORPHOSIS ───────────────────
-const MetaCanvas = ({ year }) => {
-  const canvasRef = useRef(null);
-  const starsRef = useRef([]);
-  const spiralRef = useRef([]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let animationFrameId;
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    window.addEventListener("resize", resize);
-    resize();
-
-    // Procedural Cosmic Generator
-    const createCosmos = () => {
-      const stars = [];
-      const spiral = [];
-
-      // 1. Static Backdrop Stars
-      for (let i = 0; i < 200; i++) {
-        stars.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() * 2,
-          alpha: Math.random(),
-          blink: Math.random() * 0.1,
-        });
-      }
-
-      // 2. Spiral Galaxy Points
-      for (let i = 0; i < 1500; i++) {
-        const angle = 0.1 * i;
-        const r = 2 * angle;
-        spiral.push({
-          angle,
-          r,
-          size: Math.random() * 1.5,
-          offset: (Math.random() - 0.5) * 50,
-          yearLimit: 2017 + (i / 1500) * 9, // Spreads growth across years
-        });
-      }
-      return { stars, spiral };
-    };
-
-    if (starsRef.current.length === 0) {
-      const { stars, spiral } = createCosmos();
-      starsRef.current = stars;
-      spiralRef.current = spiral;
-    }
-
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const isMetamorphosis = year >= 2024;
-      const primaryColor = isMetamorphosis ? "#FFB464" : "#ffffff";
-
-      // Draw Backdrop Stars
-      starsRef.current.forEach((s) => {
-        s.alpha += s.blink;
-        if (s.alpha > 1 || s.alpha < 0.2) s.blink *= -1;
-        ctx.fillStyle = primaryColor;
-        ctx.globalAlpha = s.alpha * 0.5;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      // Draw Spiral Galaxy
-      ctx.save();
-      ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate(Date.now() * 0.0002); // Subtle slow rotation
-
-      spiralRef.current.forEach((p) => {
-        if (year < p.yearLimit) return;
-
-        const growthFactor = Math.min(1, year - p.yearLimit + 0.1);
-        const x = Math.cos(p.angle) * p.r + (Math.random() - 0.5) * 5;
-        const y = Math.sin(p.angle) * p.r + (Math.random() - 0.5) * 5;
-
-        ctx.fillStyle = primaryColor;
-        // Make the center brighter and goldier
-        if (p.r < 100 && isMetamorphosis) {
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = "#FFB464";
-          ctx.globalAlpha = 0.8 * growthFactor;
-        } else {
-          ctx.shadowBlur = 0;
-          ctx.globalAlpha = (0.4 - p.r / (canvas.width / 2)) * growthFactor;
-        }
-
-        ctx.beginPath();
-        ctx.arc(x, y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      ctx.restore();
-
-      animationFrameId = requestAnimationFrame(render);
-    };
-
-    render();
-    return () => {
-      window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [year]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 z-0 pointer-events-none opacity-80"
-      style={{
-        filter: year >= 2024 ? "blur(0.5px) contrast(1.2)" : "none",
-        mixBlendMode: "screen",
-      }}
-    />
-  );
-};
 
 let hasPlayedLoading = false;
 
@@ -232,7 +110,8 @@ export default function Home() {
 
   const [loading, setLoading] = useState(!shouldSkipLoading);
   const [heroSplit, setHeroSplit] = useState(shouldSkipLoading);
-  const [year, setYear] = useState(shouldSkipLoading ? 2026 : 1990);
+  const [year, setYear] = useState(shouldSkipLoading ? 2026 : 2015);
+  const [isPreloaderComplete, setIsPreloaderComplete] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [resultMode, setResultMode] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
@@ -289,24 +168,25 @@ export default function Home() {
     }
   }, [isWarping, navigate]);
 
-  // ─── TRANSCENDING YEAR LOADER ─────────────────────────────────────────────
+  // ─── SIMPLE 2D PRELOADER Logic ───
   useEffect(() => {
-    if (!loading) return; // Skip animation if already loaded once
-    let currentYear = 2017;
-    setYear(currentYear);
-    const interval = setInterval(() => {
-      currentYear += 1;
-      if (currentYear >= 2026) {
-        currentYear = 2026;
-        clearInterval(interval);
-        // Page is ready behind the scenes, now show the gate
-        setTimeout(() => {
-          setShowEnterButton(true);
-        }, 500);
+    if (!loading) return;
+    let start = 2015;
+    const duration = 6000; // 6 seconds for the count
+    const interval = duration / (2026 - 2015);
+    
+    const timer = setInterval(() => {
+      start += 1;
+      if (start >= 2026) {
+        start = 2026;
+        clearInterval(timer);
+        setIsPreloaderComplete(true);
+        setShowEnterButton(true);
       }
-      setYear(currentYear);
-    }, 600); // Slower cinematic pace for the canvas drawing
-    return () => clearInterval(interval);
+      setYear(start);
+    }, interval);
+
+    return () => clearInterval(timer);
   }, [loading]);
 
   const handleEnter = () => {
@@ -561,47 +441,35 @@ export default function Home() {
     <div className="relative w-full min-h-screen bg-black selection:bg-[#FFB464] selection:text-black overflow-x-hidden">
       {/* 1. TRANSCENDING LOADING OVERLAY: METAMORPHOSIS OF CIVILIZATION (CANVAS DRAWING) */}
       {loading && (
-        <div className="fixed inset-0 z-[2000] bg-[#0a0a0a] flex flex-col items-center justify-center font-medieval overflow-hidden">
-          {/* Procedural Drawing Canvas */}
-          <MetaCanvas year={year} />
-
-          {/* Overlay Darkener */}
-          <div className="absolute inset-0 bg-black/40 z-[1]" />
-
-          <div className="relative z-10 flex flex-col items-center">
-            <div className="text-white text-[15vw] leading-none opacity-5 absolute select-none tracking-tighter -top-20">
-              {year}
+        <div id="preloader-wrapper" className={heroSplit ? "exit" : ""}>
+          <div id="year-wrap-preloader" style={{ 
+            opacity: isPreloaderComplete ? 0 : 1, 
+            visibility: isPreloaderComplete ? 'hidden' : 'visible',
+            transform: `translate(-50%, -50%) scale(${isPreloaderComplete ? 1.2 : 1})`,
+            transition: 'all 0.8s ease'
+          }}>
+            <div id="year-num-preloader">{year}</div>
+          </div>
+          
+          <div id="timeline-wrap-preloader" style={{ 
+            opacity: isPreloaderComplete ? 0 : 1, 
+            visibility: isPreloaderComplete ? 'hidden' : 'visible',
+            transition: 'opacity 0.6s ease' 
+          }}>
+            <div id="tl-track-preloader">
+              <div id="tl-fill-preloader" style={{ width: `${((year - 2015) / (2026 - 2015)) * 100}%` }} />
             </div>
+          </div>
 
-            <div className="flex flex-col items-center gap-4">
-              <div className="text-[#FFB464] text-8xl md:text-[10vw] leading-none drop-shadow-[0_0_60px_rgba(255,180,100,0.4)] animate-pulse">
-                {year}
+          <div id="enter-wrap-preloader" className={showEnterButton ? "show" : ""}>
+            <button id="enter-btn-preloader" onClick={handleEnter}>
+              <div className="epulse"></div><div className="epulse"></div><div className="epulse"></div>
+              <div className="ebi">
+                <div className="ebc tl"></div><div className="ebc br"></div>
+                <div className="esh"></div>
+                <span className="etx">Enter</span>
               </div>
-
-              <div className="h-0.5 w-64 bg-white/10 relative overflow-hidden">
-                <div
-                  className="absolute inset-y-0 left-0 bg-[#FFB464] transition-all duration-500"
-                  style={{ width: `${((year - 2017) / (2026 - 2017)) * 100}%` }}
-                />
-              </div>
-
-              <div className="mt-6 font-medieval text-[12px] text-[#FFB464]/60 tracking-[0.8em] uppercase">
-                {year < 2021
-                  ? "Drawing Origin"
-                  : year < 2026
-                    ? "Evolving Progress"
-                    : "Metamorphosis Complete"}
-              </div>
-            </div>
-
-            {showEnterButton && (
-              <button
-                onClick={handleEnter}
-                className="mt-20 px-12 py-5 border-2 border-[#FFB464] text-[#FFB464] bg-black/40 backdrop-blur-xl font-bungee text-2xl hover:bg-[#FFB464] hover:text-black transition-all duration-500 animate-bounce shadow-[0_0_50px_rgba(255,180,100,0.3)] zine-border-accent uppercase tracking-widest"
-              >
-                Enter the Techno Sahotsava
-              </button>
-            )}
+            </button>
           </div>
         </div>
       )}

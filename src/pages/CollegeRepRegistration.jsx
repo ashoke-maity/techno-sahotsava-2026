@@ -456,7 +456,8 @@ const CollegeRepRegistration = () => {
                                     <input 
                                         required={!verificationStatus.rep1Email}
                                         type="text" 
-                                        className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                        disabled={!isCollegesOpen}
+                                        className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${!isCollegesOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         value={rep1.firstName}
                                         onChange={(e) => setRep1({...rep1, firstName: e.target.value})}
                                     />
@@ -465,7 +466,8 @@ const CollegeRepRegistration = () => {
                                     <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Middle Name</label>
                                     <input 
                                         type="text" 
-                                        className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                        disabled={!isCollegesOpen}
+                                        className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${!isCollegesOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         value={rep1.middleName}
                                         onChange={(e) => setRep1({...rep1, middleName: e.target.value})}
                                     />
@@ -475,7 +477,8 @@ const CollegeRepRegistration = () => {
                                     <input 
                                         required={!verificationStatus.rep1Email}
                                         type="text" 
-                                        className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                        disabled={!isCollegesOpen}
+                                        className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${!isCollegesOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         value={rep1.lastName}
                                         onChange={(e) => setRep1({...rep1, lastName: e.target.value})}
                                     />
@@ -492,7 +495,7 @@ const CollegeRepRegistration = () => {
                                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                                             Verified
                                         </span>
-                                    ) : (
+                                    ) : isCollegesOpen && (
                                         <button 
                                             type="button"
                                             onClick={() => handleVerifyEmail(1, rep1.email)}
@@ -505,8 +508,8 @@ const CollegeRepRegistration = () => {
                                 <input 
                                     required
                                     type="email" 
-                                    readOnly={verificationStatus.rep1Email}
-                                    className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${verificationStatus.rep1Email ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                    readOnly={verificationStatus.rep1Email || !isCollegesOpen}
+                                    className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${verificationStatus.rep1Email || !isCollegesOpen ? 'opacity-60 cursor-not-allowed' : ''}`}
                                     value={rep1.email}
                                     onChange={(e) => {
                                         setRep1({...rep1, email: e.target.value.toLowerCase()});
@@ -525,7 +528,8 @@ const CollegeRepRegistration = () => {
                                             <input 
                                                 required={!verificationStatus.rep1Email}
                                                 type="tel" 
-                                                className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                disabled={!isCollegesOpen}
+                                                className={`w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${!isCollegesOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 value={rep1.phone}
                                                 onChange={(e) => handlePhoneChange(1, 'phone', e.target.value)}
                                                 placeholder="XXXXXXXXXX"
@@ -539,7 +543,8 @@ const CollegeRepRegistration = () => {
                                             <input 
                                                 required={!verificationStatus.rep1Email}
                                                 type="tel" 
-                                                className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                disabled={!isCollegesOpen}
+                                                className={`w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${!isCollegesOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 value={rep1.whatsapp}
                                                 onChange={(e) => handlePhoneChange(1, 'whatsapp', e.target.value)}
                                                 placeholder="XXXXXXXXXX"
@@ -561,7 +566,8 @@ const CollegeRepRegistration = () => {
                             <button 
                                 type="button"
                                 onClick={() => setHasSecondRep(!hasSecondRep)}
-                                className={`px-6 py-3 border-2 font-bungee text-xs tracking-widest transition-all duration-300 ${hasSecondRep ? 'border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' : 'border-[#FFB464] text-[#FFB464] hover:bg-[#FFB464] hover:text-black'}`}
+                                disabled={!isCollegesOpen}
+                                className={`px-6 py-3 border-2 font-bungee text-xs tracking-widest transition-all duration-300 ${!isCollegesOpen ? 'opacity-30 cursor-not-allowed grayscale' : hasSecondRep ? 'border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' : 'border-[#FFB464] text-[#FFB464] hover:bg-[#FFB464] hover:text-black'}`}
                             >
                                 {hasSecondRep ? "- REMOVE SECOND REP" : "+ ADD SECOND REP"}
                             </button>
@@ -576,7 +582,8 @@ const CollegeRepRegistration = () => {
                                             <input 
                                                 required={hasSecondRep && !verificationStatus.rep2Email}
                                                 type="text" 
-                                                className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                disabled={!isCollegesOpen}
+                                                className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${!isCollegesOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 value={rep2.firstName}
                                                 onChange={(e) => setRep2({...rep2, firstName: e.target.value})}
                                             />
@@ -585,7 +592,8 @@ const CollegeRepRegistration = () => {
                                             <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Middle Name</label>
                                             <input 
                                                 type="text" 
-                                                className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                disabled={!isCollegesOpen}
+                                                className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${!isCollegesOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 value={rep2.middleName}
                                                 onChange={(e) => setRep2({...rep2, middleName: e.target.value})}
                                             />
@@ -595,7 +603,8 @@ const CollegeRepRegistration = () => {
                                             <input 
                                                 required={hasSecondRep && !verificationStatus.rep2Email}
                                                 type="text" 
-                                                className="w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                disabled={!isCollegesOpen}
+                                                className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${!isCollegesOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 value={rep2.lastName}
                                                 onChange={(e) => setRep2({...rep2, lastName: e.target.value})}
                                             />
@@ -612,7 +621,7 @@ const CollegeRepRegistration = () => {
                                                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                                                     Verified
                                                 </span>
-                                            ) : (
+                                            ) : isCollegesOpen && (
                                                 <button 
                                                     type="button"
                                                     onClick={() => handleVerifyEmail(2, rep2.email)}
@@ -625,8 +634,8 @@ const CollegeRepRegistration = () => {
                                         <input 
                                             required={hasSecondRep}
                                             type="email" 
-                                            readOnly={verificationStatus.rep2Email}
-                                            className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${verificationStatus.rep2Email ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                            readOnly={verificationStatus.rep2Email || !isCollegesOpen}
+                                            className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${verificationStatus.rep2Email || !isCollegesOpen ? 'opacity-60 cursor-not-allowed' : ''}`}
                                             value={rep2.email}
                                             onChange={(e) => {
                                                 setRep2({...rep2, email: e.target.value.toLowerCase()});
@@ -645,7 +654,8 @@ const CollegeRepRegistration = () => {
                                                     <input 
                                                         required={hasSecondRep && !verificationStatus.rep2Email}
                                                         type="tel" 
-                                                        className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                        disabled={!isCollegesOpen}
+                                                        className={`w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${!isCollegesOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                         value={rep2.phone}
                                                         onChange={(e) => handlePhoneChange(2, 'phone', e.target.value)}
                                                         placeholder="XXXXXXXXXX"
@@ -659,7 +669,8 @@ const CollegeRepRegistration = () => {
                                                     <input 
                                                         required={hasSecondRep && !verificationStatus.rep2Email}
                                                         type="tel" 
-                                                        className="w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit"
+                                                        disabled={!isCollegesOpen}
+                                                        className={`w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${!isCollegesOpen ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                         value={rep2.whatsapp}
                                                         onChange={(e) => handlePhoneChange(2, 'whatsapp', e.target.value)}
                                                         placeholder="XXXXXXXXXX"
