@@ -6,6 +6,8 @@ import Sponsors from '../pages/Sponsors';
 import Developers from '../pages/Developers';
 import Results from '../pages/Results';
 import CollegeRepRegistration from '../pages/CollegeRepRegistration';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function ScrollHandler() {
   const { pathname } = useLocation();
@@ -59,6 +61,18 @@ function App() {
         <Route path="/hall-of-fame" element={<Results />} />
         <Route path="/college-rep-registration" element={<CollegeRepRegistration />} />
       </Routes>
+      <ToastContainer 
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </Router>
   )
 }

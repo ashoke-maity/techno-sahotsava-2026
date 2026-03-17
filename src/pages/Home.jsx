@@ -5,6 +5,7 @@ import API from "../services/api";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "@studio-freight/lenis";
+import { toast } from "react-toastify";
 
 // Assets
 import skullBg from "../assets/backgrounds/3. BGwithIllustrations.webp";
@@ -659,10 +660,13 @@ export default function Home() {
                   href={import.meta.env.VITE_REGISTER_URL}
                   className="ml-[0vw] md:ml-[1.2vw] px-8 md:px-10 py-3 border-2 border-[#FFB464] text-white bg-black/40 backdrop-blur-md font-bungee text-base md:text-lg hover:bg-[#FFB464] hover:text-black transition-all shadow-2xl zine-border-accent"
                 >
-                  Register Now !
+                  Login !
                 </a>
               ) : (
-                <div className="px-10 py-3 border border-white/10 bg-black/60 backdrop-blur-sm text-[#FFB464]/30 font-bungee text-sm lg:text-base tracking-[0.5em] select-none">
+                <div 
+                  onClick={() => toast.info("Coming soon !")}
+                  className="px-10 py-3 border border-white/10 bg-black/60 backdrop-blur-sm text-[#FFB464]/30 font-bungee text-sm lg:text-base tracking-[0.5em] select-none cursor-pointer hover:bg-white/5 transition-colors"
+                >
                   Opening soon !
                 </div>
               )}
@@ -1154,7 +1158,7 @@ export default function Home() {
 
               {/* 2. Literature */}
               <button
-                onClick={() => alert("Coming soon !")}
+                onClick={() => toast.info("Coming soon !")}
                 className="md:col-span-2 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
               >
                 <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">02 / Literature</span>
