@@ -19,7 +19,7 @@ import bg6 from "../assets/backgrounds/6.webp";
 import sahotsavaLogo from "../assets/logos/sahotsava logo posterize.png";
 import sofTigLogo from "../assets/logos/sof_tig_tiu_white.png";
 import sanskaranLogo from "../assets/logos/sanskaran logo png WHITE.png";
-import chitrakaLogo from "../assets/logos/Chitraka white logo.png";
+import cameraLogo from "../assets/logos/Chitraka white logo.png";
 import loadingVideo from "../assets/loading_screen/loading_anim.mp4";
 
 // Team Pics
@@ -145,8 +145,10 @@ export default function Home() {
         );
         setRegistrationOpen(response.data.registration_open);
         setResultMode(response.data.result_mode);
+        setOTSEMode(response.data.otse_mode); // Capture OTSE mode
+        console.log("[SYSTEM] Site Status Synchronized:", response.data);
       } catch (err) {
-        // Log suppressed
+        console.error("[SYSTEM] Status Fetch Failed:", err);
       }
     };
     fetchStatus();
@@ -158,6 +160,10 @@ export default function Home() {
     socket.on("resultModeUpdate", (data) =>
       setResultMode(data.result_mode),
     );
+    socket.on("otseModeUpdate", (data) => {
+      console.log("[SYSTEM] OTSE Mode Updated via WebSocket:", data);
+      setOTSEMode(data.otse_mode);
+    });
     return () => socket.disconnect();
   }, []);
 
@@ -647,27 +653,40 @@ export default function Home() {
             </div>
 
             {/* SLOT 3: REGISTER / VIEW RESULT BUTTON (Adjust positioning freely here) */}
-            <div className="relative translate-y-[-60px] mt-8">
+            <div className="relative translate-y-[-60px] mt-8 flex flex-col items-center gap-4">
               {resultMode ? (
                 <button
                   onClick={() => navigate('/hall-of-fame')}
-                  className="ml-[0vw] md:ml-[1.2vw] px-8 md:px-10 py-3 border-2 border-[#FFB464] text-black bg-[#FFB464] font-bungee text-base md:text-lg hover:bg-black hover:text-[#FFB464] transition-all shadow-[0_0_50px_rgba(255,180,100,0.5)] zine-border-accent animate-pulse"
+                  className="px-8 md:px-10 py-3 border-2 border-[#FFB464] text-black bg-[#FFB464] font-bungee text-base md:text-lg hover:bg-black hover:text-[#FFB464] transition-all shadow-[0_0_50px_rgba(255,180,100,0.5)] zine-border-accent animate-pulse"
                 >
                   View Result !
                 </button>
-              ) : registrationOpen ? (
-                <a
-                  href={import.meta.env.VITE_REGISTER_URL}
-                  className="ml-[0vw] md:ml-[1.2vw] px-8 md:px-10 py-3 border-2 border-[#FFB464] text-white bg-black/40 backdrop-blur-md font-bungee text-base md:text-lg hover:bg-[#FFB464] hover:text-black transition-all shadow-2xl zine-border-accent"
-                >
-                  Login !
-                </a>
               ) : (
-                <div 
-                  onClick={() => toast.info("Coming soon !")}
-                  className="px-10 py-3 border border-white/10 bg-black/60 backdrop-blur-sm text-[#FFB464]/30 font-bungee text-sm lg:text-base tracking-[0.5em] select-none cursor-pointer hover:bg-white/5 transition-colors"
-                >
-                  Opening soon !
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                  {registrationOpen ? (
+                    <a
+                      href={import.meta.env.VITE_REGISTER_URL}
+                      className="px-8 md:px-10 py-3 border-2 border-[#FFB464] text-white bg-black/40 backdrop-blur-md font-bungee text-base md:text-lg hover:bg-[#FFB464] hover:text-black transition-all shadow-2xl zine-border-accent"
+                    >
+                      Login !
+                    </a>
+                  ) : (
+                    <div 
+                      onClick={() => toast.info("Coming soon !")}
+                      className="px-10 py-3 border border-white/10 bg-black/60 backdrop-blur-sm text-[#FFB464]/30 font-bungee text-sm lg:text-base tracking-[0.5em] select-none cursor-pointer hover:bg-white/5 transition-colors"
+                    >
+                      Opening soon !
+                    </div>
+                  )}
+
+                  {otseMode && (
+                    <button
+                      onClick={() => navigate('/login')}
+                      className="px-8 md:px-10 py-3 border-2 border-blue-500 text-blue-400 bg-blue-500/10 font-bungee text-base md:text-lg hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_30px_rgba(59,130,246,0.3)] zine-border-accent animate-pulse"
+                    >
+                      OTSE LIVE !
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -1257,9 +1276,9 @@ export default function Home() {
                   />
                   <div className="h-6 w-[1px] bg-white/20" />
                   <img loading="lazy"
-                    src={chitrakaLogo}
+                    src={cameraLogo}
                     className="h-10 md:h-12 w-auto object-contain"
-                    alt="Chitraka"
+                    alt="Camera"
                   />
                 </div>
               </div>

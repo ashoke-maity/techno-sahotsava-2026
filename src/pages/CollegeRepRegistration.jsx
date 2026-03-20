@@ -16,7 +16,7 @@ import { toast } from 'react-toastify';
 import sahotsavaLogo from '../assets/logos/sahotsava logo posterize.png';
 import sofTigLogo from '../assets/logos/sof_tig_tiu_white.png';
 import sanskaranLogo from '../assets/logos/sanskaran logo png WHITE.png';
-import chitrakaLogo from '../assets/logos/Chitraka white logo.png';
+import cameraLogo from '../assets/logos/Chitraka white logo.png';
 
 const CollegeRepRegistration = () => {
     const navigate = useNavigate();
@@ -1086,7 +1086,7 @@ const CollegeRepRegistration = () => {
                             <div className="h-6 w-[1px] bg-white/20" />
                             <img src={sanskaranLogo} className="h-10 md:h-18 w-auto object-contain" alt="Team Sanskaran" />
                             <div className="h-6 w-[1px] bg-white/20" />
-                            <img src={chitrakaLogo} className="h-10 md:h-12 w-auto object-contain" alt="Chitraka" />
+                            <img src={cameraLogo} className="h-10 md:h-12 w-auto object-contain" alt="Camera" />
                         </div>
                     </div>
                 </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Core Assets
-import chitrakaLogo from "../assets/logos/Chitraka white logo.png";
+import cameraLogo from "../assets/logos/Chitraka white logo.png";
 import sahotsavaLogo from "../assets/logos/sahotsava logo posterize.png";
 import sofTigLogo from "../assets/logos/sof_tig_tiu_white.png";
 import sanskaranLogo from "../assets/logos/sanskaran logo png WHITE.png";
@@ -61,16 +61,16 @@ const Developers = () => {
         {/* Chitraka Highlight Section */}
         <div className="relative group mb-32 border border-[#FFB464]/20 bg-[#FFB464]/5 p-8 md:p-16 backdrop-blur-xl flex flex-col md:flex-row items-center gap-12 overflow-hidden shadow-[0_0_100px_rgba(255,180,100,0.05)]">
           <div className="relative z-10 w-32 md:w-48 shrink-0">
-            <img src={chitrakaLogo} alt="Chitraka Domain" className="w-full h-auto drop-shadow-[0_0_30px_rgba(255,180,100,0.3)] group-hover:scale-110 transition-transform duration-700" />
+            <img src={cameraLogo} alt="Camera Domain" className="w-full h-auto drop-shadow-[0_0_30px_rgba(255,180,100,0.3)] group-hover:scale-110 transition-transform duration-700" />
           </div>
 
           <div className="relative z-10 flex-1 text-center md:text-left">
             <div className="font-medieval text-[#FFB464] text-xs uppercase tracking-[0.5em] mb-4">The Foundation</div>
             <h2 className="font-medieval text-5xl md:text-7xl leading-tight tracking-tighter mb-6 uppercase">
-              Chitraka Domain.
+              Camera Domain.
             </h2>
             <p className="text-white/70 max-w-2xl text-base md:text-lg leading-relaxed font-outfit">
-              The <span className="text-[#FFB464]">Chitraka Domain</span> is the definitive creative engine of Team Sanskaran. As a titan of visual storytelling—encompassing photography, digital editing, videography, and fine arts—it provided the essential aesthetic blueprint for this civilization. <span className="text-white font-bold italic">The realization of this digital world would have been impossible without the visionary contributions of this domain.</span>
+              The <span className="text-[#FFB464]">Camera Domain</span> is the definitive creative engine of Team Sanskaran. As a titan of visual storytelling—encompassing photography, digital editing, videography, and fine arts—it provided the essential aesthetic blueprint for this civilization. <span className="text-white font-bold italic">The realization of this digital world would have been impossible without the visionary contributions of this domain.</span>
             </p>
           </div>
         </div>
@@ -162,9 +162,9 @@ const Developers = () => {
               />
               <div className="h-6 w-[1px] bg-white/20" />
               <img 
-                src={chitrakaLogo} 
+                src={cameraLogo} 
                 className="h-10 md:h-12 w-auto object-contain" 
-                alt="Chitraka" 
+                alt="Camera" 
               />
             </div>
           </div>
