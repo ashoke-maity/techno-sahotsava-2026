@@ -116,6 +116,7 @@ export default function Home() {
   const [isPreloaderComplete, setIsPreloaderComplete] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [resultMode, setResultMode] = useState(false);
+  const [otseMode, setOTSEMode] = useState(false);
   const [isWarping, setIsWarping] = useState(false);
 
   const navigate = useNavigate();
