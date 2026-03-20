@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import API from "../services/api";
@@ -6,6 +6,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "@studio-freight/lenis";
 import { toast } from "react-toastify";
+import { Star } from "lucide-react";
 
 // Assets
 import skullBg from "../assets/backgrounds/3. BGwithIllustrations.webp";
@@ -117,6 +118,9 @@ export default function Home() {
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [resultMode, setResultMode] = useState(false);
   const [otseMode, setOTSEMode] = useState(false);
+  const [featuredEventsEnabled, setFeaturedEventsEnabled] = useState(false);
+  const [featuredEventsList, setFeaturedEventsList] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
   const [isWarping, setIsWarping] = useState(false);
 
   const navigate = useNavigate();
@@ -127,6 +131,7 @@ export default function Home() {
   const [showEnterButton, setShowEnterButton] = useState(false);
   const [isRepFormOpen, setIsRepFormOpen] = useState(false);
   const [isBlackSub, setIsBlackSub] = useState(false);
+  const lastUpdateRef = useRef(0);
 
   // ─── DATA FETCHING ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -139,20 +144,54 @@ export default function Home() {
       serverOrigin = rawUrl.split("/technoSahotsava2026")[0];
     }
 
-    const fetchStatus = async () => {
+    const syncSystemState = async () => {
+      const startTime = Date.now();
+      lastUpdateRef.current = startTime;
+
       try {
-        const response = await API.get(
-          `${serverOrigin}/technoSahotsava2026/admin/registration-status?t=${Date.now()}`,
-        );
-        setRegistrationOpen(response.data.registration_open);
-        setResultMode(response.data.result_mode);
-        setOTSEMode(response.data.otse_mode); // Capture OTSE mode
-        console.log("[SYSTEM] Site Status Synchronized:", response.data);
+        const apiPrefix = "/technoSahotsava2026";
+        
+        const results = await Promise.allSettled([
+          API.get(`${serverOrigin}${apiPrefix}/admin/registration-status?t=${startTime}`),
+          API.get(`${serverOrigin}${apiPrefix}/public/events?t=${startTime}`)
+        ]);
+
+        if (lastUpdateRef.current !== startTime) return;
+
+        const statusRes = results[0];
+        const eventsRes = results[1];
+
+        if (statusRes.status === 'fulfilled') {
+          const data = statusRes.value.data;
+          setRegistrationOpen(data.registration_open === true || String(data.registration_open) === 'true');
+          setResultMode(data.result_mode === true || String(data.result_mode) === 'true');
+          setOTSEMode(data.otse_mode === true || String(data.otse_mode) === 'true');
+
+          const isFeaturedEnabled = data.featured_events_enabled === true || String(data.featured_events_enabled) === 'true';
+          setFeaturedEventsEnabled(isFeaturedEnabled);
+
+          // Deep Parse Protection for robust array handling
+          let fList = data.featured_events_list || [];
+          if (typeof fList === 'string' && fList.startsWith('[')) {
+            try { fList = JSON.parse(fList); } catch (e) { console.error("Deep Parse Error:", e); }
+          }
+          setFeaturedEventsList(Array.isArray(fList) ? fList : []);
+        } else {
+          console.error("[SYSTEM] Registration Status Fetch failed:", statusRes.reason);
+        }
+
+        if (eventsRes.status === 'fulfilled') {
+          setAllEvents(eventsRes.value.data || []);
+        } else {
+          console.error("[SYSTEM] Event Registry Fetch failed:", eventsRes.reason);
+        }
+
       } catch (err) {
-        console.error("[SYSTEM] Status Fetch Failed:", err);
+        console.error("[SYSTEM] Critical Synchronization Error:", err);
       }
     };
-    fetchStatus();
+
+    syncSystemState();
 
     const socket = io(serverOrigin);
     socket.on("registrationStatusUpdate", (data) =>
@@ -162,8 +201,23 @@ export default function Home() {
       setResultMode(data.result_mode),
     );
     socket.on("otseModeUpdate", (data) => {
-      console.log("[SYSTEM] OTSE Mode Updated via WebSocket:", data);
       setOTSEMode(data.otse_mode);
+    });
+    socket.on("featuredEventsUpdate", (data) => {
+      lastUpdateRef.current = Date.now();
+
+      if (data.featured_events_enabled !== undefined) {
+        const isEnabled = data.featured_events_enabled === true || String(data.featured_events_enabled) === 'true';
+        setFeaturedEventsEnabled(isEnabled);
+      }
+
+      if (data.featured_events_list !== undefined) {
+        let fList = data.featured_events_list || [];
+        if (typeof fList === 'string' && fList.startsWith('[')) {
+          try { fList = JSON.parse(fList); } catch (e) { }
+        }
+        setFeaturedEventsList(Array.isArray(fList) ? fList : []);
+      }
     });
     return () => socket.disconnect();
   }, []);
@@ -177,6 +231,28 @@ export default function Home() {
       return () => clearTimeout(timer);
     }
   }, [isWarping, navigate]);
+
+  // Derived curated events list
+  const curatedEvents = useMemo(() => {
+    if (!allEvents || !featuredEventsList || !Array.isArray(allEvents) || !Array.isArray(featuredEventsList)) {
+      return [];
+    }
+
+    const featuredIds = new Set(featuredEventsList.map(String));
+    const filtered = allEvents.filter(ev => {
+      return featuredIds.has(String(ev.id));
+    });
+
+    return filtered;
+  }, [allEvents, featuredEventsList, featuredEventsEnabled]);
+
+  // Handle ScrollTrigger Refresh when dynamic sections toggle
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [featuredEventsEnabled, curatedEvents.length]);
 
   // ─── CULTURAL SEQUENCED PRELOADER Logic ───
   useEffect(() => {
@@ -563,10 +639,13 @@ export default function Home() {
           { id: "hero", sub: ["START"], top: '0%' },
           { id: "anchor-theme", sub: ["Theme"], top: '3%' },
           { id: "anchor-gallery", sub: ["Gallery"], top: '13%' },
-          { id: "leaders", sub: ["Mentors"], top: '58%' },
-          { id: "founder", sub: ["Founders"], top: '63%' },
-          { id: "builders", sub: ["Meet the Team"], top: '74%' },
-          { id: "destiny", sub: ["College Representative"], top: '92%' }
+          ...(featuredEventsEnabled && curatedEvents.length > 0 ? [
+            { id: "featured-events", sub: ["Highlights"], top: '54%' }
+          ] : []),
+          { id: "leaders", sub: ["Mentors"], top: '62%' },
+          { id: "founder", sub: ["Founders"], top: '67%' },
+          { id: "builders", sub: ["Meet the Team"], top: '77%' },
+          { id: "destiny", sub: ["register rep", "sponsors"], top: '86.5%' }
         ].map((chap, i) => (
           <div
             key={i}
@@ -653,43 +732,70 @@ export default function Home() {
               />
             </div>
 
-            {/* SLOT 3: REGISTER / VIEW RESULT BUTTON (Adjust positioning freely here) */}
+            {/* SLOT 3: ACTION BUTTONS - Sleek pill row */}
             <div className="relative translate-y-[-60px] mt-8 flex flex-col items-center gap-4">
-              {resultMode ? (
-                <button
-                  onClick={() => navigate('/hall-of-fame')}
-                  className="px-8 md:px-10 py-3 border-2 border-[#FFB464] text-black bg-[#FFB464] font-bungee text-base md:text-lg hover:bg-black hover:text-[#FFB464] transition-all shadow-[0_0_50px_rgba(255,180,100,0.5)] zine-border-accent animate-pulse"
-                >
-                  View Result !
-                </button>
-              ) : (
-                <div className="flex flex-col md:flex-row items-center gap-4">
-                  {registrationOpen ? (
-                    <a
-                      href={import.meta.env.VITE_REGISTER_URL}
-                      className="px-8 md:px-10 py-3 border-2 border-[#FFB464] text-white bg-black/40 backdrop-blur-md font-bungee text-base md:text-lg hover:bg-[#FFB464] hover:text-black transition-all shadow-2xl zine-border-accent"
-                    >
-                      Login !
-                    </a>
-                  ) : (
-                    <div 
-                      onClick={() => toast.info("Coming soon !")}
-                      className="px-10 py-3 border border-white/10 bg-black/60 backdrop-blur-sm text-[#FFB464]/30 font-bungee text-sm lg:text-base tracking-[0.5em] select-none cursor-pointer hover:bg-white/5 transition-colors"
-                    >
-                      Opening soon !
-                    </div>
-                  )}
+              <div className="flex items-center gap-px bg-white/5 backdrop-blur-md border border-white/10 rounded-full overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.6)]">
 
-                  {otseMode && (
+                {/* 1. Login / Portal Closed */}
+                {registrationOpen ? (
+                  <a
+                    href={import.meta.env.VITE_REGISTER_URL}
+                    className="group relative px-7 py-2.5 text-[10px] font-outfit font-bold tracking-[0.35em] uppercase text-[#FFB464] hover:text-black transition-all duration-500 overflow-hidden"
+                  >
+                    <span className="absolute inset-0 bg-[#FFB464] translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out rounded-full" />
+                    <span className="relative z-10">Login</span>
+                  </a>
+                ) : (
+                  <div
+                    onClick={() => toast.info("Registration is currently restricted.")}
+                    className="px-7 py-2.5 text-[10px] font-outfit font-bold tracking-[0.35em] uppercase text-white/20 cursor-pointer select-none hover:text-white/40 transition-colors duration-300"
+                  >
+                    Closed
+                  </div>
+                )}
+
+                {/* Divider */}
+                <div className="w-px h-5 bg-white/10 flex-shrink-0" />
+
+                {/* 2. Result */}
+                <button
+                  onClick={() => {
+                    if (resultMode) {
+                      navigate('/hall-of-fame');
+                    } else {
+                      toast.info("Result Portal is in Administrative Standby.");
+                    }
+                  }}
+                  className={`group relative px-7 py-2.5 text-[10px] font-outfit font-bold tracking-[0.35em] uppercase transition-all duration-500 overflow-hidden ${
+                    resultMode
+                      ? 'text-emerald-400 hover:text-black'
+                      : 'text-white/30 hover:text-white/60'
+                  }`}
+                >
+                  {resultMode && (
+                    <span className="absolute inset-0 bg-emerald-400 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out rounded-full" />
+                  )}
+                  <span className="relative z-10">{resultMode ? 'Results' : 'Results'}</span>
+                  {resultMode && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-ping opacity-75" />
+                  )}
+                </button>
+
+                {/* 3. OTSE */}
+                {otseMode && (
+                  <>
+                    <div className="w-px h-5 bg-white/10 flex-shrink-0" />
                     <button
                       onClick={() => navigate('/login')}
-                      className="px-8 md:px-10 py-3 border-2 border-blue-500 text-blue-400 bg-blue-500/10 font-bungee text-base md:text-lg hover:bg-blue-500 hover:text-white transition-all shadow-[0_0_30px_rgba(59,130,246,0.3)] zine-border-accent animate-pulse"
+                      className="group relative px-7 py-2.5 text-[10px] font-outfit font-bold tracking-[0.35em] uppercase text-blue-400 hover:text-black transition-all duration-500 overflow-hidden"
                     >
-                      OTSE LIVE !
+                      <span className="absolute inset-0 bg-blue-400 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out rounded-full" />
+                      <span className="relative z-10">OTSE</span>
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 rounded-full animate-ping opacity-75" />
                     </button>
-                  )}
-                </div>
-              )}
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="absolute bottom-10 opacity-30">
@@ -824,6 +930,62 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        {/* FEATURED EVENTS SECTION */}
+        {featuredEventsEnabled && curatedEvents.length > 0 && (
+          <section
+            id="featured-events"
+            className="relative w-full py-32 px-10 md:pl-56 md:pr-20 bg-[#050505] border-b border-white/5"
+          >
+            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[50vw] h-[50vh] bg-[#FFB464]/5 blur-[120px] rounded-full pointer-events-none" />
+
+            <div className="relative z-10 w-full max-w-7xl">
+              <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+                <div className="space-y-4">
+                  <div className="font-medieval text-[#FFB464] text-xs uppercase tracking-[0.8em] opacity-50">
+                    Showcase
+                  </div>
+                  <h2 className="text-white font-medieval text-5xl md:text-[8vw] leading-none tracking-tighter uppercase">
+                    Featured <br /> Events.
+                  </h2>
+                </div>
+                <p className="font-outfit text-white/30 text-[10px] md:text-sm uppercase tracking-[0.4em] max-w-xs text-right leading-relaxed">
+                  The heart of the festival. Selected chronicles of divine expression.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {curatedEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="group relative bg-white/[0.02] border border-white/10 p-8 rounded-sm hover:bg-white/[0.05] hover:border-[#FFB464]/30 transition-all duration-700"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#FFB464]/0 via-transparent to-[#FFB464]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                    <div className="relative z-10 flex flex-col h-full">
+                      <div className="flex justify-between items-start mb-6">
+                        <span className="font-medieval text-[#FFB464] text-[9px] uppercase tracking-[0.2em] px-2 py-1 bg-[#FFB464]/10 border border-[#FFB464]/20">
+                          {event.domain}
+                        </span>
+                      </div>
+
+                      <h3 className="font-medieval text-2xl text-white mb-6 group-hover:translate-x-2 transition-transform duration-700 line-clamp-2">
+                        {event.name}
+                      </h3>
+
+                      <div className="mt-auto pt-6 border-t border-white/5 group-hover:border-[#FFB464]/20 transition-colors flex items-center justify-between">
+                        <span className="font-outfit text-[9px] text-white/40 uppercase tracking-widest">
+                          {event.format}
+                        </span>
+                        <Star size={12} className="text-[#FFB464] opacity-30 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* LEADERS SECTION */}
         <section
@@ -1168,34 +1330,35 @@ export default function Home() {
               {/* 1. Community (Large Feature) */}
               <button
                 onClick={() => navigate('/college-rep-registration')}
-                className="md:col-span-4 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
+                className="md:col-span-3 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-[#FFB464]/0 via-transparent to-[#FFB464]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">01 / Community</span>
-                <h3 className="relative z-10 font-medieval text-4xl md:text-5xl text-white group-hover:translate-x-4 transition-transform duration-700 ease-out">Become College Rep</h3>
+                <h3 className="relative z-10 font-medieval text-4xl text-white group-hover:translate-x-4 transition-transform duration-700 ease-out">Become College Rep</h3>
                 <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
               </button>
 
               {/* 2. Literature */}
               <button
-                onClick={() => toast.info("Coming soon !")}
-                className="md:col-span-2 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
+                onClick={() => toast.info("Brochure releasing soon!")}
+                className="md:col-span-3 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
               >
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FFB464]/0 via-transparent to-[#FFB464]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">02 / Literature</span>
-                <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">Preview Brochure</h3>
+                <h3 className="relative z-10 font-medieval text-4xl text-white group-hover:translate-x-4 transition-transform duration-700 ease-out">Official Brochure</h3>
                 <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
               </button>
 
-              {/* 3. Allies */}
+              {/* 4. Allies */}
               <button onClick={() => setIsWarping(true)} className="md:col-span-2 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
-                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">03 / Allies</span>
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">04 / Allies</span>
                 <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">Our Sponsors</h3>
                 <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
               </button>
 
-              {/* 4. Presence */}
+              {/* 5. Presence */}
               <div className="md:col-span-2 group relative overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
-                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">04 / Presence</span>
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">05 / Presence</span>
                 <h3 className="relative z-10 font-medieval text-3xl text-white mb-6">Our Socials</h3>
 
                 <div className="relative z-10 space-y-4">
@@ -1230,7 +1393,7 @@ export default function Home() {
                 onClick={() => navigate('/developers')}
                 className="md:col-span-2 group relative text-left overflow-hidden bg-[#FFB464]/5 border border-[#FFB464]/20 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464] hover:bg-[#FFB464]/10"
               >
-                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">05 / Architect</span>
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">06 / Architect</span>
                 <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">The Developers</h3>
                 <div className="mt-12 h-[1px] w-12 bg-[#FFB464]/30 group-hover:w-full transition-all duration-1000 origin-left" />
               </button>
@@ -1513,7 +1676,9 @@ export default function Home() {
         .chapter-marker-group {
           position: relative;
           display: flex;
-          align-items: center;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
           z-index: 1002;
         }
 
@@ -1564,3 +1729,5 @@ export default function Home() {
     </div>
   );
 }
+
+
