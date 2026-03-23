@@ -518,3 +518,328 @@ html {
   100% { transform: scale(1.8); opacity: 0; }
 }
 
+/* =====================================================================
+   PRELOADER — CULTURAL SEQUENCE
+   Fully responsive: height-aware so nothing is EVER clipped.
+   Strategy: images & gaps scale to the SMALLER of vw/vh so it always
+   fits on landscape phones, short monitors, 4K, and portrait mobiles.
+   ===================================================================== */
+
+/* Wrapper override for cultural theme */
+#preloader-wrapper.cultural-theme {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ── Fake matrix text wall ── */
+.fake-loading-wall {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.fake-load-item {
+  position: absolute;
+  font-family: 'Outfit', monospace;
+  font-size: clamp(7px, 1.2vmin, 11px);
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: floatFade 6s ease-in-out infinite;
+}
+
+@keyframes floatFade {
+  0%, 100% { opacity: 0.08; transform: translateY(0); }
+  50%       { opacity: 0.45; transform: translateY(-8px); }
+}
+
+/* ── Progress bar — always at the very bottom ── */
+.system-loading-bar-wrap {
+  position: absolute;
+  bottom: clamp(8px, 2.5vh, 28px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(480px, 78vw);
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.system-loading-bar-fill {
+  height: 100%;
+  background: rgba(255,255,255,0.75);
+  transition: width 0.4s ease-out;
+  border-radius: 4px;
+  box-shadow: 0 0 12px rgba(255,255,255,0.4);
+}
+
+/* ── Central vertical stack ── */
+.preloader-vertical-stack {
+  /* Strictly bounded to viewport height so content never clips */
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  max-width: 100vw;
+  /* Use dvh so mobile browser chrome is accounted for */
+  height: 100dvh;
+  max-height: 100dvh;
+  box-sizing: border-box;
+  overflow: hidden;
+  /* Leave room for the progress bar at bottom */
+  padding: clamp(12px, 3vh, 36px) clamp(12px, 4vw, 60px) clamp(36px, 7vh, 64px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Gap scales with the smaller viewport dimension */
+  gap: clamp(6px, 1.8vmin, 22px);
+  text-align: center;
+}
+
+/* ── Reveal animations (shared pattern) ── */
+.tiu-reveal,
+.sahotsava-reveal-box,
+.title-reveal-box,
+.sanskaran-reveal-box,
+.enter-reveal-box {
+  /* flex-shrink prevents any item from forcing overflow */
+  flex-shrink: 0;
+}
+
+/* ── TIU Logo ── */
+.tiu-reveal {
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.tiu-reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+.logo-tiu-top {
+  /* Scale with the smaller dimension so it fits on short wide screens */
+  width: min(clamp(120px, 30vmin, 320px), 55vw);
+  height: auto;
+  max-height: 18vh;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ── Sahotsava Logo ── */
+.sahotsava-reveal-box {
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.9s ease 0.1s, transform 0.9s ease 0.1s;
+}
+.sahotsava-reveal-box.active {
+  opacity: 1;
+  transform: scale(1);
+}
+.logo-sahotsava-mid {
+  width: min(clamp(80px, 18vmin, 200px), 40vw);
+  height: auto;
+  max-height: 18vh;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ── Festival Title Text ── */
+.title-reveal-box {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s;
+}
+.title-reveal-box.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+.festival-title-text {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  /* vmin-based: scales with whichever dimension is smaller */
+  font-size: clamp(0.72rem, 3.2vmin, 2.3rem);
+  color: #ffffff;
+  letter-spacing: clamp(0.05em, 0.35vmin, 0.2em);
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0;
+  line-height: 1.25;
+  word-break: break-word;
+}
+.year-anim-span {
+  display: inline-block;
+  color: #FFB464;
+  text-shadow: 0 0 24px rgba(255,180,100,0.55);
+  font-variant-numeric: tabular-nums;
+  min-width: 4ch;
+}
+
+/* ── Sanskaran Logo ── */
+.sanskaran-reveal-box {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.7s ease 0.1s, transform 0.7s ease 0.1s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(3px, 0.8vmin, 8px);
+}
+.sanskaran-reveal-box.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+.pb-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(7px, 1.4vmin, 12px);
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+}
+.logo-sanskaran-massive {
+  width: min(clamp(90px, 20vmin, 250px), 40vw);
+  height: auto;
+  max-height: 16vh;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ── Enter Button ── */
+.enter-reveal-box {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.7s ease 0.25s, transform 0.7s ease 0.25s;
+  pointer-events: none;
+}
+.enter-reveal-box.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.btn-final-enter {
+  position: relative;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: clamp(8px, 1.5vh, 16px) clamp(24px, 5vw, 64px);
+  cursor: pointer;
+  border-radius: 2px;
+  overflow: hidden;
+  transition: border-color 0.45s ease, box-shadow 0.45s ease, transform 0.15s ease;
+  backdrop-filter: blur(12px);
+}
+.btn-final-enter::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  transform: translateY(100%);
+  transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+}
+.btn-final-enter:hover::before,
+.btn-final-enter:active::before { transform: translateY(0); }
+.btn-final-enter:hover {
+  border-color: #fff;
+  box-shadow: 0 0 36px rgba(255,255,255,0.18);
+}
+.btn-final-enter:active { transform: scale(0.97); }
+.enter-text-main {
+  position: relative;
+  z-index: 1;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: clamp(9px, 1.6vmin, 14px);
+  letter-spacing: clamp(0.22em, 0.7vmin, 0.55em);
+  text-transform: uppercase;
+  color: #fff;
+  transition: color 0.45s ease;
+}
+.btn-final-enter:hover .enter-text-main { color: #000; }
+
+/* ── Ambient glow orbs ── */
+.cultural-glow-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.g-red {
+  position: absolute;
+  width: clamp(160px, 44vmin, 560px);
+  height: clamp(160px, 44vmin, 560px);
+  background: radial-gradient(circle, rgba(255,80,40,0.07) 0%, transparent 70%);
+  border-radius: 50%;
+  top: -10%; left: -10%;
+  filter: blur(clamp(36px, 7vmin, 90px));
+  animation: driftOrb 18s ease-in-out infinite alternate;
+}
+.g-blue {
+  position: absolute;
+  width: clamp(160px, 50vmin, 650px);
+  height: clamp(160px, 50vmin, 650px);
+  background: radial-gradient(circle, rgba(60,120,255,0.07) 0%, transparent 70%);
+  border-radius: 50%;
+  bottom: -15%; right: -10%;
+  filter: blur(clamp(44px, 9vmin, 110px));
+  animation: driftOrb 22s ease-in-out infinite alternate-reverse;
+}
+@keyframes driftOrb {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(5%, 5%); }
+}
+
+/* ── Sidebar sub-label ── */
+.sub-label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 9px;
+  color: rgba(255,180,100,0.5);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+/* ── Portrait phones — tighten gaps further ── */
+@media (max-width: 480px) {
+  .preloader-vertical-stack {
+    gap: clamp(5px, 1.5vmin, 16px);
+    padding-bottom: clamp(32px, 8vh, 52px);
+  }
+}
+
+/* ── Very tiny phones (< 360px wide) ── */
+@media (max-width: 360px) {
+  .festival-title-text { font-size: 0.7rem; letter-spacing: 0.04em; }
+  .logo-tiu-top            { max-height: 14vh; }
+  .logo-sahotsava-mid      { max-height: 13vh; }
+  .logo-sanskaran-massive  { max-height: 12vh; }
+}
+
+/* ── Short viewport — landscape phones / short desktop windows ── */
+@media (max-height: 560px) {
+  .preloader-vertical-stack {
+    gap: clamp(4px, 1vmin, 10px);
+    padding: 8px clamp(12px, 4vw, 60px) 40px;
+    justify-content: space-evenly;
+  }
+  .logo-tiu-top            { max-height: 14vh; width: min(clamp(80px, 14vmin, 180px), 35vw); }
+  .logo-sahotsava-mid      { max-height: 14vh; width: min(clamp(60px, 12vmin, 150px), 28vw); }
+  .logo-sanskaran-massive  { max-height: 13vh; width: min(clamp(70px, 13vmin, 160px), 30vw); }
+  .festival-title-text     { font-size: clamp(0.65rem, 3vmin, 1.3rem); }
+  .system-loading-bar-wrap { bottom: 4px; }
+  .pb-label                { display: none; } /* hide in extreme landscape */
+}
+
+
+
+

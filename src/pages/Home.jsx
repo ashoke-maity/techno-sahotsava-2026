@@ -103,10 +103,12 @@ let hasPlayedLoading = false;
 
 export default function Home() {
   const location = useLocation();
-  const shouldSkipLoading = hasPlayedLoading || location.state?.skipLoading;
+  const queryParams = new URLSearchParams(location.search);
+  const skipLoadingQuery = queryParams.get('skipLoading') === 'true';
+  const shouldSkipLoading = hasPlayedLoading || location.state?.skipLoading || skipLoadingQuery;
 
-  // Update the global flag if we are skipping via location state
-  if (location.state?.skipLoading) {
+  // Update the global flag if we are skipping via location state or query
+  if (location.state?.skipLoading || skipLoadingQuery) {
     hasPlayedLoading = true;
   }
 

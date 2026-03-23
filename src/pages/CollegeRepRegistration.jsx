@@ -868,6 +868,9 @@ const CollegeRepRegistration = () => {
                                         }
                                     }}
                                 />
+                                <p className="text-[10px] text-white/40 mt-2 leading-relaxed">
+                                    Note: Verification email might be delivered to your <strong className="text-[#FFB464] uppercase tracking-wider">Spam Section</strong>. Please check there if not found in your inbox.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -1026,6 +1029,9 @@ const CollegeRepRegistration = () => {
                                                 }
                                             }}
                                         />
+                                        <p className="text-[10px] text-white/40 mt-2 leading-relaxed">
+                                            Note: Verification email might be delivered to your <strong className="text-[#FFB464] uppercase tracking-wider">Spam Section</strong>. Please check there if not found in your inbox.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
