@@ -120,10 +120,13 @@ export default function Home() {
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [resultMode, setResultMode] = useState(false);
   const [otseMode, setOTSEMode] = useState(false);
+  const [eventDates, setEventDates] = useState('');
   const [featuredEventsEnabled, setFeaturedEventsEnabled] = useState(false);
   const [featuredEventsList, setFeaturedEventsList] = useState([]);
   const [allEvents, setAllEvents] = useState([]);
   const [isWarping, setIsWarping] = useState(false);
+  const [officialBrochureUrl, setOfficialBrochureUrl] = useState('');
+  const [collegeList, setCollegeList] = useState([]);
 
   const navigate = useNavigate();
   const lenisRef = useRef(null);
@@ -152,7 +155,7 @@ export default function Home() {
 
       try {
         const apiPrefix = "/technoSahotsava2026";
-        
+
         const results = await Promise.allSettled([
           API.get(`${serverOrigin}${apiPrefix}/admin/registration-status?t=${startTime}`),
           API.get(`${serverOrigin}${apiPrefix}/public/events?t=${startTime}`)
@@ -168,6 +171,16 @@ export default function Home() {
           setRegistrationOpen(data.registration_open === true || String(data.registration_open) === 'true');
           setResultMode(data.result_mode === true || String(data.result_mode) === 'true');
           setOTSEMode(data.otse_mode === true || String(data.otse_mode) === 'true');
+          setEventDates(data.event_dates || '');
+          
+          // Migrate legacy strings
+          const cListRaw = data.college_list || [];
+          const cListMapped = cListRaw.map(item => {
+            if (typeof item === 'string') return { original: item.toUpperCase(), display: '' };
+            return item;
+          });
+          setCollegeList(cListMapped);
+          setOfficialBrochureUrl(data.official_brochure_url || '');
 
           const isFeaturedEnabled = data.featured_events_enabled === true || String(data.featured_events_enabled) === 'true';
           setFeaturedEventsEnabled(isFeaturedEnabled);
@@ -194,6 +207,7 @@ export default function Home() {
     };
 
     syncSystemState();
+    const syncInterval = setInterval(syncSystemState, 60000);
 
     const socket = io(serverOrigin);
     socket.on("registrationStatusUpdate", (data) =>
@@ -204,6 +218,16 @@ export default function Home() {
     );
     socket.on("otseModeUpdate", (data) => {
       setOTSEMode(data.otse_mode);
+    });
+    socket.on("eventDatesUpdate", (data) => {
+      setEventDates(data.event_dates);
+    });
+    socket.on('collegeListUpdate', (data) => {
+      const updatedList = (data.college_list || []).map(item => {
+        if (typeof item === 'string') return { original: item.toUpperCase(), display: '' };
+        return item;
+      });
+      setCollegeList(updatedList);
     });
     socket.on("featuredEventsUpdate", (data) => {
       lastUpdateRef.current = Date.now();
@@ -604,6 +628,11 @@ export default function Home() {
               <h1 className="festival-title-text">
                 TECHNO SAHOTSAVA <span className="year-anim-span">{year}</span>
               </h1>
+              {eventDates && (
+                <div className="text-[#FFB464] font-medieval text-sm tracking-[0.4em] uppercase mt-4 animate-pulse opacity-80 text-center">
+                  {eventDates}
+                </div>
+              )}
             </div>
 
             {/* 4. Powered by Sanskaran (MASSIVE Logo as requested) */}
@@ -725,77 +754,86 @@ export default function Home() {
           <div className="relative z-[30] hero-portal-content h-full w-full flex flex-col items-center justify-center">
 
 
-            {/* SLOT 2: TECHNO SAHOTSAVA TITLE (Adjust positioning freely here) */}
-            <div className="relative translate-y-25">
+            {/* SLOT 2: TITLE + DATES — tight grouped block */}
+            <div className="flex flex-col items-center">
               <img loading="lazy"
                 src={titleFont}
-                className="h-[50vh] md:h-[60vh] lg:h-[70vh] xl:h-[75vh] 2xl:h-[80vh] w-auto object-contain drop-shadow-[0_0_120px_rgba(255,180,100,0.6)] transition-all duration-700"
+                className="h-[45vh] md:h-[55vh] lg:h-[65vh] xl:h-[70vh] w-auto object-contain drop-shadow-[0_0_120px_rgba(255,180,100,0.6)] transition-all duration-700"
                 alt="Sahotsava"
               />
+              {eventDates && (
+                <div className="-mt-[14vh] animate-fadeIn">
+                  <div className="text-[#FFB464] font-medieval text-2xl md:text-3xl lg:text-4xl tracking-[0.35em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] text-center font-bold">
+                    {eventDates}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* SLOT 3: ACTION BUTTONS - Sleek pill row */}
-            <div className="relative translate-y-[-60px] mt-8 flex flex-col items-center gap-4">
-              <div className="flex items-center gap-px bg-white/5 backdrop-blur-md border border-white/10 rounded-full overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+            <div className="relative mt-8 flex flex-col items-center gap-4">
+              {/* Sacred inscription buttons */}
+              <div className="flex items-stretch gap-3">
 
-                {/* 1. Login / Portal Closed */}
+                {/* LOGIN */}
                 {registrationOpen ? (
                   <a
                     href={import.meta.env.VITE_REGISTER_URL}
-                    className="group relative px-7 py-2.5 text-[10px] font-outfit font-bold tracking-[0.35em] uppercase text-[#FFB464] hover:text-black transition-all duration-500 overflow-hidden"
+                    className="group flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 border-white/60 hover:border-white bg-white/25 hover:bg-white/35 backdrop-blur-sm transition-all duration-400"
                   >
-                    <span className="absolute inset-0 bg-[#FFB464] translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out rounded-full" />
-                    <span className="relative z-10">Login</span>
+                    <span className="text-[#FFB464] text-sm">✦</span>
+                    <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold">Login</span>
+                    <span className="block h-[1.5px] w-6 bg-white/70 group-hover:w-10 group-hover:bg-[#FFB464] transition-all duration-500 ease-out" />
                   </a>
                 ) : (
                   <div
                     onClick={() => toast.info("Registration is currently restricted.")}
-                    className="px-7 py-2.5 text-[10px] font-outfit font-bold tracking-[0.35em] uppercase text-white/20 cursor-pointer select-none hover:text-white/40 transition-colors duration-300"
+                    className="flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 border-white/30 bg-white/10 backdrop-blur-sm cursor-pointer"
                   >
-                    Closed
+                    <span className="text-white/50 text-sm">✦</span>
+                    <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white/50 font-bold">Closed</span>
+                    <span className="block h-[1.5px] w-6 bg-white/30" />
                   </div>
                 )}
 
-                {/* Divider */}
-                <div className="w-px h-5 bg-white/10 flex-shrink-0" />
-
-                {/* 2. Result */}
+                {/* RESULTS */}
                 <button
                   onClick={() => {
-                    if (resultMode) {
-                      navigate('/hall-of-fame');
-                    } else {
-                      toast.info("Result Portal is in Administrative Standby.");
-                    }
+                    if (resultMode) navigate('/hall-of-fame');
+                    else toast.info("Result Portal is in Administrative Standby.");
                   }}
-                  className={`group relative px-7 py-2.5 text-[10px] font-outfit font-bold tracking-[0.35em] uppercase transition-all duration-500 overflow-hidden ${
-                    resultMode
-                      ? 'text-emerald-400 hover:text-black'
-                      : 'text-white/30 hover:text-white/60'
-                  }`}
+                  className={`group flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 backdrop-blur-sm transition-all duration-400 ${resultMode
+                      ? 'border-white/60 hover:border-white bg-white/25 hover:bg-white/35'
+                      : 'border-white/30 bg-white/10'
+                    }`}
                 >
-                  {resultMode && (
-                    <span className="absolute inset-0 bg-emerald-400 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out rounded-full" />
-                  )}
-                  <span className="relative z-10">{resultMode ? 'Results' : 'Results'}</span>
-                  {resultMode && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-ping opacity-75" />
+                  {resultMode ? (
+                    <>
+                      <span className="text-emerald-400 text-sm group-hover:text-emerald-300 transition-colors duration-400">◈</span>
+                      <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold group-hover:text-emerald-300 transition-colors duration-400">Results</span>
+                      <span className="block h-[1.5px] w-6 bg-white/70 group-hover:w-10 group-hover:bg-emerald-400 transition-all duration-500 ease-out" />
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-white/50 text-sm">◈</span>
+                      <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white/50 font-bold">Results</span>
+                      <span className="block h-[1.5px] w-6 bg-white/30" />
+                    </>
                   )}
                 </button>
 
-                {/* 3. OTSE */}
-                {otseMode && (
-                  <>
-                    <div className="w-px h-5 bg-white/10 flex-shrink-0" />
-                    <button
-                      onClick={() => navigate('/login')}
-                      className="group relative px-7 py-2.5 text-[10px] font-outfit font-bold tracking-[0.35em] uppercase text-blue-400 hover:text-black transition-all duration-500 overflow-hidden"
-                    >
-                      <span className="absolute inset-0 bg-blue-400 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out rounded-full" />
-                      <span className="relative z-10">OTSE</span>
-                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-400 rounded-full animate-ping opacity-75" />
-                    </button>
-                  </>
+                {/* BROCHURE PORTAL - Dynamic Asset */}
+                {officialBrochureUrl && (
+                  <a
+                    href={officialBrochureUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 border-amber-400/40 hover:border-amber-400 bg-amber-400/10 hover:bg-amber-400/20 backdrop-blur-sm transition-all duration-400"
+                  >
+                    <span className="text-amber-400 text-sm group-hover:scale-125 transition-transform duration-400">▼</span>
+                    <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold group-hover:text-amber-300 transition-colors duration-400">Brochure</span>
+                    <span className="block h-[1.5px] w-6 bg-amber-400/50 group-hover:w-10 group-hover:bg-amber-400 transition-all duration-500 ease-out" />
+                  </a>
                 )}
               </div>
             </div>
@@ -1403,6 +1441,35 @@ export default function Home() {
             </div>
           </div>
 
+          {/* ─── PARTICIPATING INSTITUTIONS (Dynamic Marquee) ─── */}
+          {collegeList && collegeList.length > 0 && (
+            <div className="relative z-10 w-full mt-32 border-y border-white/5 py-16 overflow-hidden bg-white/[0.01] backdrop-blur-3xl group">
+              <div className="max-w-7xl mx-auto px-6 mb-12">
+                <div className="flex items-center gap-6">
+                  <div className="text-[#FFB464] font-medieval text-[10px] uppercase tracking-[0.8em] opacity-40">Network_Core</div>
+                  <div className="h-[1px] flex-1 bg-gradient-to-r from-[#FFB464]/20 to-transparent" />
+                </div>
+                <h2 className="text-white/80 font-medieval text-5xl md:text-7xl uppercase tracking-tighter mt-4 leading-none">Participating<br/><span className="text-[#FFB464]">Institutions</span></h2>
+              </div>
+
+              <div className="relative flex whitespace-nowrap overflow-hidden">
+                <div className="flex animate-marquee hover:[animation-play-state:paused] gap-12 md:gap-24 items-center py-6">
+                  {[...collegeList, ...collegeList].map((c, i) => (
+                    <div key={i} className="flex items-center gap-6 md:gap-10 shrink-0">
+                      <span className="text-white/20 font-medieval text-3xl md:text-5xl select-none">◈</span>
+                      <span className="text-white font-medieval text-4xl md:text-8xl uppercase tracking-tighter hover:text-[#FFB464] transition-colors duration-500 cursor-default">
+                        {typeof c === 'string' ? c : (c.display || c.original || 'INSTITUTION')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-black to-transparent z-20 pointer-events-none" />
+              <div className="absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-black to-transparent z-20 pointer-events-none" />
+            </div>
+          )}
+
           {/* MINIMALIST IDENTITY FOOTER (Redesigned for balance) */}
           <div className="relative z-10 w-full max-w-7xl mx-auto pt-12 pb-4 border-t border-white/5 mt-10 translate-y-[-0px]">
             <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-16">
@@ -1468,6 +1535,17 @@ export default function Home() {
       )}
 
       <style>{`
+        .animate-marquee {
+          display: flex;
+          animation: marquee 60s linear infinite;
+          width: fit-content;
+        }
+
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+
         ::-webkit-scrollbar { display: none; }
         html { -ms-overflow-style: none; scrollbar-width: none; }
         

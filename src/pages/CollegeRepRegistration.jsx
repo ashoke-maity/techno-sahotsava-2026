@@ -21,6 +21,8 @@ import cameraLogo from '../assets/logos/Chitraka white logo.png';
 const CollegeRepRegistration = () => {
     const navigate = useNavigate();
     const [colleges, setColleges] = useState([]);
+    const [collegeList, setCollegeList] = useState([]); 
+    const [showMasterList, setShowMasterList] = useState(false);
     const [isCollegesOpen, setIsCollegesOpen] = useState(true);
     const [isLoadingColleges, setIsLoadingColleges] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,17 +75,22 @@ const CollegeRepRegistration = () => {
                 serverOrigin = rawUrl.split("/technoSahotsava2026")[0];
             }
 
-            const response = await API.get(`${serverOrigin}/technoSahotsava2026/public/colleges`);
-            const isOpen = response.data?.isOpen !== false;
-            setIsCollegesOpen(isOpen);
+            const response = await API.get(`${serverOrigin}/technoSahotsava2026/admin/registration-status`);
+            const settings = response.data;
+            setIsCollegesOpen(settings.colleges_open);
+            const cListRaw = settings.college_list || [];
+            const cListMapped = cListRaw.map(item => {
+                if (typeof item === 'string') return { original: item.toUpperCase(), display: '' };
+                return item;
+            });
+            setCollegeList(cListMapped);
 
+            const colRes = await API.get(`${serverOrigin}/technoSahotsava2026/public/colleges`);
             let fetchedColleges = [];
-            if (isOpen) {
-                if (response.data && Array.isArray(response.data.colleges)) {
-                    fetchedColleges = response.data.colleges;
-                } else if (Array.isArray(response.data)) {
-                    fetchedColleges = response.data;
-                }
+            if (colRes.data && Array.isArray(colRes.data.colleges)) {
+                fetchedColleges = colRes.data.colleges;
+            } else if (Array.isArray(colRes.data)) {
+                fetchedColleges = colRes.data;
             }
             setColleges(fetchedColleges);
         } catch (err) {
@@ -123,6 +130,13 @@ const CollegeRepRegistration = () => {
             socket = io(serverOrigin);
             socket.on('collegesStatusUpdate', () => fetchColleges());
             socket.on('collegesDirectoryUpdate', () => fetchColleges());
+            socket.on('collegeListUpdate', (data) => {
+                const updatedList = (data.college_list || []).map(item => {
+                    if (typeof item === 'string') return { original: item.toUpperCase(), display: '' };
+                    return item;
+                });
+                setCollegeList(updatedList);
+            });
         }
         return () => {
             if (socket) socket.disconnect();
@@ -642,9 +656,38 @@ const CollegeRepRegistration = () => {
                 <form onSubmit={handleSubmit} className="space-y-16">
                     {/* College Selection */}
                     <div className="space-y-8">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 flex-wrap">
                             <span className="font-medieval text-[#FFB464] text-xl opacity-50">01</span>
                             <h2 className="font-medieval text-2xl uppercase tracking-widest text-[#FFB464]">Institutional Origin</h2>
+                            {/* Master List compact dropdown */}
+                            {collegeList.length > 0 && (
+                                <div className="relative ml-auto">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowMasterList(prev => !prev)}
+                                        className="flex items-center gap-2 px-3 py-1.5 border border-white/20 hover:border-[#FFB464]/50 bg-white/5 hover:bg-white/10 transition-all text-[9px] uppercase tracking-[0.3em] text-white/50 hover:text-[#FFB464]"
+                                    >
+                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                                        Master List ({collegeList.length})
+                                        <svg className={`w-3 h-3 transition-transform ${showMasterList ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                    </button>
+                                    {showMasterList && (
+                                        <div className="absolute right-0 top-full mt-1 w-72 bg-[#0a0a0b] border border-white/15 shadow-2xl z-50 max-h-56 overflow-y-auto">
+                                            {collegeList.map((c, i) => (
+                                                <div key={i} className="flex items-center gap-4 px-3 py-2 border-b border-white/5 hover:bg-white/5">
+                                                    <span className="text-[8px] text-[#FFB464]/40 font-mono w-6 shrink-0">{String(i+1).padStart(2,'0')}</span>
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="text-[10px] text-white/50 uppercase tracking-tight">{c.original || c}</span>
+                                                        {c.display && (
+                                                            <span className="text-[9px] text-[#FFB464] uppercase font-bold tracking-wider">Named as: {c.display}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <div className="max-w-xl relative" ref={dropdownRef}>
                             <label className="block text-[10px] uppercase tracking-[0.2em] text-[#FFB464]/60 font-bold mb-3">Select Your Institution *</label>
@@ -731,6 +774,8 @@ const CollegeRepRegistration = () => {
                                     Institution list is currently private. Please try again later.
                                 </p>
                             )}
+
+
                         </div>
                     </div>
 
