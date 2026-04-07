@@ -83,13 +83,15 @@ const GalleryCard = ({ images, index }) => {
   return (
     <div className="gallery-item flex-shrink-0 w-[80vw] md:w-[45vw] aspect-video group relative overflow-hidden ring-1 ring-white/10 hover:ring-[#FFB464]/50 transition-all duration-500 rounded-sm">
       {images.map((img, i) => (
-        <img loading="lazy"
+        <img
+          loading="lazy"
           key={i}
           src={img}
-          className={`absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-1000 ease-in-out ${i === currentImgIndex
-            ? "opacity-100 scale-100"
-            : "opacity-0 scale-110"
-            }`}
+          className={`absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-1000 ease-in-out ${
+            i === currentImgIndex
+              ? "opacity-100 scale-100"
+              : "opacity-0 scale-110"
+          }`}
           alt={`Memory ${index}-${i}`}
         />
       ))}
@@ -98,14 +100,14 @@ const GalleryCard = ({ images, index }) => {
   );
 };
 
-
 let hasPlayedLoading = false;
 
 export default function Home() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const skipLoadingQuery = queryParams.get('skipLoading') === 'true';
-  const shouldSkipLoading = hasPlayedLoading || location.state?.skipLoading || skipLoadingQuery;
+  const skipLoadingQuery = queryParams.get("skipLoading") === "true";
+  const shouldSkipLoading =
+    hasPlayedLoading || location.state?.skipLoading || skipLoadingQuery;
 
   // Update the global flag if we are skipping via location state or query
   if (location.state?.skipLoading || skipLoadingQuery) {
@@ -115,17 +117,20 @@ export default function Home() {
   const [loading, setLoading] = useState(!shouldSkipLoading);
   const [heroSplit, setHeroSplit] = useState(shouldSkipLoading);
   const [year, setYear] = useState(shouldSkipLoading ? 2026 : 2015);
-  const [preloaderStage, setPreloaderStage] = useState(shouldSkipLoading ? 'done' : 'tiu'); // stages: tiu, main, done
+  const [preloaderStage, setPreloaderStage] = useState(
+    shouldSkipLoading ? "done" : "tiu",
+  ); // stages: tiu, main, done
   const [isPreloaderComplete, setIsPreloaderComplete] = useState(false);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [resultMode, setResultMode] = useState(false);
   const [otseMode, setOTSEMode] = useState(false);
-  const [eventDates, setEventDates] = useState('');
+  const [eventDates, setEventDates] = useState("");
   const [featuredEventsEnabled, setFeaturedEventsEnabled] = useState(false);
   const [featuredEventsList, setFeaturedEventsList] = useState([]);
   const [allEvents, setAllEvents] = useState([]);
   const [isWarping, setIsWarping] = useState(false);
-  const [officialBrochureUrl, setOfficialBrochureUrl] = useState('');
+  const [officialBrochureUrl, setOfficialBrochureUrl] = useState("");
+  const [collegeReferenceUrl, setCollegeReferenceUrl] = useState("");
   const [collegeList, setCollegeList] = useState([]);
 
   const navigate = useNavigate();
@@ -157,8 +162,10 @@ export default function Home() {
         const apiPrefix = "/technoSahotsava2026";
 
         const results = await Promise.allSettled([
-          API.get(`${serverOrigin}${apiPrefix}/admin/registration-status?t=${startTime}`),
-          API.get(`${serverOrigin}${apiPrefix}/public/events?t=${startTime}`)
+          API.get(
+            `${serverOrigin}${apiPrefix}/admin/registration-status?t=${startTime}`,
+          ),
+          API.get(`${serverOrigin}${apiPrefix}/public/events?t=${startTime}`),
         ]);
 
         if (lastUpdateRef.current !== startTime) return;
@@ -166,41 +173,61 @@ export default function Home() {
         const statusRes = results[0];
         const eventsRes = results[1];
 
-        if (statusRes.status === 'fulfilled') {
+        if (statusRes.status === "fulfilled") {
           const data = statusRes.value.data;
-          setRegistrationOpen(data.registration_open === true || String(data.registration_open) === 'true');
-          setResultMode(data.result_mode === true || String(data.result_mode) === 'true');
-          setOTSEMode(data.otse_mode === true || String(data.otse_mode) === 'true');
-          setEventDates(data.event_dates || '');
-          
+          setRegistrationOpen(
+            data.registration_open === true ||
+              String(data.registration_open) === "true",
+          );
+          setResultMode(
+            data.result_mode === true || String(data.result_mode) === "true",
+          );
+          setOTSEMode(
+            data.otse_mode === true || String(data.otse_mode) === "true",
+          );
+          setEventDates(data.event_dates || "");
+
           // Migrate legacy strings
           const cListRaw = data.college_list || [];
-          const cListMapped = cListRaw.map(item => {
-            if (typeof item === 'string') return { original: item.toUpperCase(), display: '' };
+          const cListMapped = cListRaw.map((item) => {
+            if (typeof item === "string")
+              return { original: item.toUpperCase(), display: "" };
             return item;
           });
           setCollegeList(cListMapped);
-          setOfficialBrochureUrl(data.official_brochure_url || '');
+          setOfficialBrochureUrl(data.official_brochure_url || "");
+          setCollegeReferenceUrl(data.college_reference_url || "");
 
-          const isFeaturedEnabled = data.featured_events_enabled === true || String(data.featured_events_enabled) === 'true';
+          const isFeaturedEnabled =
+            data.featured_events_enabled === true ||
+            String(data.featured_events_enabled) === "true";
           setFeaturedEventsEnabled(isFeaturedEnabled);
 
           // Deep Parse Protection for robust array handling
           let fList = data.featured_events_list || [];
-          if (typeof fList === 'string' && fList.startsWith('[')) {
-            try { fList = JSON.parse(fList); } catch (e) { console.error("Deep Parse Error:", e); }
+          if (typeof fList === "string" && fList.startsWith("[")) {
+            try {
+              fList = JSON.parse(fList);
+            } catch (e) {
+              console.error("Deep Parse Error:", e);
+            }
           }
           setFeaturedEventsList(Array.isArray(fList) ? fList : []);
         } else {
-          console.error("[SYSTEM] Registration Status Fetch failed:", statusRes.reason);
+          console.error(
+            "[SYSTEM] Registration Status Fetch failed:",
+            statusRes.reason,
+          );
         }
 
-        if (eventsRes.status === 'fulfilled') {
+        if (eventsRes.status === "fulfilled") {
           setAllEvents(eventsRes.value.data || []);
         } else {
-          console.error("[SYSTEM] Event Registry Fetch failed:", eventsRes.reason);
+          console.error(
+            "[SYSTEM] Event Registry Fetch failed:",
+            eventsRes.reason,
+          );
         }
-
       } catch (err) {
         console.error("[SYSTEM] Critical Synchronization Error:", err);
       }
@@ -213,18 +240,17 @@ export default function Home() {
     socket.on("registrationStatusUpdate", (data) =>
       setRegistrationOpen(data.registration_open),
     );
-    socket.on("resultModeUpdate", (data) =>
-      setResultMode(data.result_mode),
-    );
+    socket.on("resultModeUpdate", (data) => setResultMode(data.result_mode));
     socket.on("otseModeUpdate", (data) => {
       setOTSEMode(data.otse_mode);
     });
     socket.on("eventDatesUpdate", (data) => {
       setEventDates(data.event_dates);
     });
-    socket.on('collegeListUpdate', (data) => {
-      const updatedList = (data.college_list || []).map(item => {
-        if (typeof item === 'string') return { original: item.toUpperCase(), display: '' };
+    socket.on("collegeListUpdate", (data) => {
+      const updatedList = (data.college_list || []).map((item) => {
+        if (typeof item === "string")
+          return { original: item.toUpperCase(), display: "" };
         return item;
       });
       setCollegeList(updatedList);
@@ -233,14 +259,18 @@ export default function Home() {
       lastUpdateRef.current = Date.now();
 
       if (data.featured_events_enabled !== undefined) {
-        const isEnabled = data.featured_events_enabled === true || String(data.featured_events_enabled) === 'true';
+        const isEnabled =
+          data.featured_events_enabled === true ||
+          String(data.featured_events_enabled) === "true";
         setFeaturedEventsEnabled(isEnabled);
       }
 
       if (data.featured_events_list !== undefined) {
         let fList = data.featured_events_list || [];
-        if (typeof fList === 'string' && fList.startsWith('[')) {
-          try { fList = JSON.parse(fList); } catch (e) { }
+        if (typeof fList === "string" && fList.startsWith("[")) {
+          try {
+            fList = JSON.parse(fList);
+          } catch (e) {}
         }
         setFeaturedEventsList(Array.isArray(fList) ? fList : []);
       }
@@ -260,12 +290,17 @@ export default function Home() {
 
   // Derived curated events list
   const curatedEvents = useMemo(() => {
-    if (!allEvents || !featuredEventsList || !Array.isArray(allEvents) || !Array.isArray(featuredEventsList)) {
+    if (
+      !allEvents ||
+      !featuredEventsList ||
+      !Array.isArray(allEvents) ||
+      !Array.isArray(featuredEventsList)
+    ) {
       return [];
     }
 
     const featuredIds = new Set(featuredEventsList.map(String));
-    const filtered = allEvents.filter(ev => {
+    const filtered = allEvents.filter((ev) => {
       return featuredIds.has(String(ev.id));
     });
 
@@ -286,10 +321,10 @@ export default function Home() {
 
     let countTimer;
     // Phase 1: Institutional Authority (Techno India Group)
-    setPreloaderStage('tiu');
+    setPreloaderStage("tiu");
 
     const t2 = setTimeout(() => {
-      setPreloaderStage('main');
+      setPreloaderStage("main");
       setYear(2015); // Explicit reset
 
       let currentY = 2015;
@@ -395,7 +430,8 @@ export default function Home() {
         scrollTrigger: {
           trigger: ".hero-section",
           start: "top top",
-          end: () => `+=${window.innerHeight * 5 + (galleryRef.current?.scrollWidth || 0)}`,
+          end: () =>
+            `+=${window.innerHeight * 5 + (galleryRef.current?.scrollWidth || 0)}`,
           pin: true,
           scrub: true,
           invalidateOnRefresh: true,
@@ -410,14 +446,30 @@ export default function Home() {
 
         // Vanish the landing page elements Decisively & Fast
         .to(".hero-bg-illo", { autoAlpha: 0, duration: 0.1, ease: "none" }, 0)
-        .to(".hero-portal-content", { autoAlpha: 0, duration: 0.1, ease: "none" }, 0)
-        .to(".main-skull", { autoAlpha: 0, duration: 0.2, ease: "power1.in" }, 0)
+        .to(
+          ".hero-portal-content",
+          { autoAlpha: 0, duration: 0.1, ease: "none" },
+          0,
+        )
+        .to(
+          ".main-skull",
+          { autoAlpha: 0, duration: 0.2, ease: "power1.in" },
+          0,
+        )
 
         // Establish new scenery instantly beneath the sliding faces
-        .to(".about-reveal-bg", { autoAlpha: 1, duration: 0.2, ease: "none" }, 0)
+        .to(
+          ".about-reveal-bg",
+          { autoAlpha: 1, duration: 0.2, ease: "none" },
+          0,
+        )
 
         // STAGE 2: Cleanup and focus
-        .to(".hero-bottom-mask", { autoAlpha: 0, duration: 0.2, ease: "none" }, 0)
+        .to(
+          ".hero-bottom-mask",
+          { autoAlpha: 0, duration: 0.2, ease: "none" },
+          0,
+        )
 
         // STAGE 4: CONTENT FOCUS
         .fromTo(
@@ -434,33 +486,42 @@ export default function Home() {
           opacity: 1,
           pointerEvents: "auto",
         })
-        .fromTo(".transition-strip",
+        .fromTo(
+          ".transition-strip",
           { yPercent: 100 },
           {
             yPercent: 0,
             stagger: {
               each: 0.08,
-              from: "start"
+              from: "start",
             },
             duration: 1.5,
-            ease: "power2.inOut"
-          }
+            ease: "power2.inOut",
+          },
         )
         // B. Old Dimension Dissolve (Fades as scenery is established)
-        .to(".about-reveal-layer", {
-          opacity: 0,
-          duration: 1.2,
-          ease: "power1.in"
-        }, 2.0)
+        .to(
+          ".about-reveal-layer",
+          {
+            opacity: 0,
+            duration: 1.2,
+            ease: "power1.in",
+          },
+          2.0,
+        )
 
         // C. Gallery Content emerges ONCE background is solidly formed
-        .to(".gallery-header, .gallery-container", {
-          opacity: 1,
-          y: 0,
-          stagger: 0.15,
-          duration: 1.2,
-          ease: "power3.out"
-        }, 2.5) // Significant delay to ensure slices have finished their primary travel
+        .to(
+          ".gallery-header, .gallery-container",
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.15,
+            duration: 1.2,
+            ease: "power3.out",
+          },
+          2.5,
+        ) // Significant delay to ensure slices have finished their primary travel
         .set(".about-reveal-layer", { display: "none" })
 
         // C. The Realization (Switching from Shutter background to real background)
@@ -471,7 +532,7 @@ export default function Home() {
         .to(galleryRef.current, {
           x: () => -(galleryRef.current.scrollWidth - window.innerWidth),
           ease: "none",
-          duration: 10
+          duration: 10,
         })
         // G. Final transition to Highlights
         .to(".gallery-header, .gallery-container, .gallery-bg-container", {
@@ -481,12 +542,16 @@ export default function Home() {
           duration: 1.5,
           ease: "power2.in",
         })
-        .to(".gallery-final-highlight", {
-          opacity: 1,
-          scale: 1,
-          duration: 1.5,
-          ease: "power4.out",
-        }, "-=1.5")
+        .to(
+          ".gallery-final-highlight",
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 1.5,
+            ease: "power4.out",
+          },
+          "-=1.5",
+        )
         .fromTo(
           ".gallery-final-highlight img",
           { scale: 2.2, filter: "brightness(0) contrast(4)" },
@@ -495,7 +560,7 @@ export default function Home() {
             filter: "brightness(1) contrast(1)",
             duration: 1.5,
           },
-          "<"
+          "<",
         );
 
       // 4. LEADERS REVEAL
@@ -536,7 +601,7 @@ export default function Home() {
         stagger: 0.1,
         duration: 1.2,
         ease: "power3.out",
-        clearProps: "transform"
+        clearProps: "transform",
       });
 
       ScrollTrigger.create({
@@ -579,52 +644,94 @@ export default function Home() {
     <div className="relative w-full min-h-screen bg-black selection:bg-[#FFB464] selection:text-black overflow-x-hidden">
       {/* 1. TRANSCENDING LOADING OVERLAY: METAMORPHOSIS OF CIVILIZATION (CANVAS DRAWING) */}
       {loading && (
-        <div id="preloader-wrapper" className={`${heroSplit ? "exit" : ""} cultural-theme`}>
+        <div
+          id="preloader-wrapper"
+          className={`${heroSplit ? "exit" : ""} cultural-theme`}
+        >
           {/* Stage-Linked Fake Load - Only visible during year count */}
-          <div className="fake-loading-wall" style={{
-            opacity: (preloaderStage === 'main' && !isPreloaderComplete) ? 0.25 : 0,
-            transition: 'opacity 0.5s ease'
-          }}>
+          <div
+            className="fake-loading-wall"
+            style={{
+              opacity:
+                preloaderStage === "main" && !isPreloaderComplete ? 0.25 : 0,
+              transition: "opacity 0.5s ease",
+            }}
+          >
             {[
-              "INIT_CULTURAL_CORE", "HERITAGE_SYNC_ACTIVE", "VOID_RECLAMATION...",
-              "DECODING_SANSKARAN", "BEYOND_THE_HORIZON", "ASSET_STREAM_01",
-              "RESTORING_PIXELS", "LEGACY_PROTOCOL", "TRADITION_ENCODER",
-              "PHASE_SHIFT_2026", "DATA_HARVESTING...", "CULTURAL_MATRIX_ON",
-              "SYSTEM_BREATHING", "SOUL_RENDER_INIT", "VIBRANCE_STABILIZER",
+              "INIT_CULTURAL_CORE",
+              "HERITAGE_SYNC_ACTIVE",
+              "VOID_RECLAMATION...",
+              "DECODING_SANSKARAN",
+              "BEYOND_THE_HORIZON",
+              "ASSET_STREAM_01",
+              "RESTORING_PIXELS",
+              "LEGACY_PROTOCOL",
+              "TRADITION_ENCODER",
+              "PHASE_SHIFT_2026",
+              "DATA_HARVESTING...",
+              "CULTURAL_MATRIX_ON",
+              "SYSTEM_BREATHING",
+              "SOUL_RENDER_INIT",
+              "VIBRANCE_STABILIZER",
             ].map((text, i) => (
-              <div key={i} className="fake-load-item" style={{
-                animationDelay: `${i * 0.3}s`,
-                left: `${(i * 17) % 100}%`,
-                top: `${(i * 11) % 100}%`
-              }}>
+              <div
+                key={i}
+                className="fake-load-item"
+                style={{
+                  animationDelay: `${i * 0.3}s`,
+                  left: `${(i * 17) % 100}%`,
+                  top: `${(i * 11) % 100}%`,
+                }}
+              >
                 {text}
               </div>
             ))}
           </div>
 
           {/* Core Loading Bar - Only visible during year count */}
-          <div className="system-loading-bar-wrap" style={{
-            opacity: (preloaderStage === 'main' && !isPreloaderComplete) ? 1 : 0,
-            transition: 'opacity 0.5s ease'
-          }}>
-            <div className="system-loading-bar-fill" style={{
-              width: `${((year - 2015) / (2026 - 2015)) * 100}%`
-            }} />
+          <div
+            className="system-loading-bar-wrap"
+            style={{
+              opacity:
+                preloaderStage === "main" && !isPreloaderComplete ? 1 : 0,
+              transition: "opacity 0.5s ease",
+            }}
+          >
+            <div
+              className="system-loading-bar-fill"
+              style={{
+                width: `${((year - 2015) / (2026 - 2015)) * 100}%`,
+              }}
+            />
           </div>
 
           <div className="preloader-vertical-stack">
             {/* 1. Techno India Logo (Visible from start) */}
-            <div className={`tiu-reveal ${preloaderStage === 'tiu' || preloaderStage === 'main' ? 'active' : ''}`}>
-              <img src={sofTigLogo} className="logo-tiu-top" alt="Techno India" />
+            <div
+              className={`tiu-reveal ${preloaderStage === "tiu" || preloaderStage === "main" ? "active" : ""}`}
+            >
+              <img
+                src={sofTigLogo}
+                className="logo-tiu-top"
+                alt="Techno India"
+              />
             </div>
 
             {/* 2. Sahotsava Logo (Strictly from 2015) */}
-            <div className={`sahotsava-reveal-box ${preloaderStage === 'main' ? 'active' : ''}`}>
-              <img src={sahotsavaLogo} className="logo-sahotsava-mid" alt="Sahotsava" />
+            <div
+              className={`sahotsava-reveal-box ${preloaderStage === "main" ? "active" : ""}`}
+            >
+              <img
+                src={sahotsavaLogo}
+                className="logo-sahotsava-mid"
+                alt="Sahotsava"
+              />
             </div>
 
             {/* 3. Techno Sahotsava 2026 Text */}
-            <div className={`title-reveal-box ${preloaderStage === 'main' ? 'active' : ''}`}>
+            <div
+              className={`title-reveal-box ${preloaderStage === "main" ? "active" : ""}`}
+            >
               <h1 className="festival-title-text">
                 TECHNO SAHOTSAVA <span className="year-anim-span">{year}</span>
               </h1>
@@ -636,13 +743,21 @@ export default function Home() {
             </div>
 
             {/* 4. Powered by Sanskaran (MASSIVE Logo as requested) */}
-            <div className={`sanskaran-reveal-box ${isPreloaderComplete ? 'active' : ''}`}>
+            <div
+              className={`sanskaran-reveal-box ${isPreloaderComplete ? "active" : ""}`}
+            >
               <span className="pb-label">powered by</span>
-              <img src={sanskaranLogo} className="logo-sanskaran-massive" alt="Sanskaran" />
+              <img
+                src={sanskaranLogo}
+                className="logo-sanskaran-massive"
+                alt="Sanskaran"
+              />
             </div>
 
             {/* 5. Enter Button */}
-            <div className={`enter-reveal-box ${isPreloaderComplete ? 'active' : ''}`}>
+            <div
+              className={`enter-reveal-box ${isPreloaderComplete ? "active" : ""}`}
+            >
               <button className="btn-final-enter" onClick={handleEnter}>
                 <span className="enter-text-main">Enter</span>
               </button>
@@ -657,7 +772,9 @@ export default function Home() {
       )}
 
       {/* 1. COORDINATED TIMELINE NAVIGATION TRACK */}
-      <div className={`timeline-track hidden md:block ${isBlackSub ? 'subs-black' : ''}`}>
+      <div
+        className={`timeline-track hidden md:block ${isBlackSub ? "subs-black" : ""}`}
+      >
         <div ref={timelineProgressRef} className="timeline-progress" />
 
         {/* traveling totem */}
@@ -667,32 +784,35 @@ export default function Home() {
 
         {/* navigational chapters */}
         {[
-          { id: "hero", sub: ["START"], top: '0%' },
-          { id: "anchor-theme", sub: ["Theme"], top: '3%' },
-          { id: "anchor-gallery", sub: ["Gallery"], top: '13%' },
-          ...(featuredEventsEnabled && curatedEvents.length > 0 ? [
-            { id: "featured-events", sub: ["Highlights"], top: '54%' }
-          ] : []),
-          { id: "leaders", sub: ["Mentors"], top: '62%' },
-          { id: "founder", sub: ["Founders"], top: '67%' },
-          { id: "builders", sub: ["Meet the Team"], top: '77%' },
-          { id: "destiny", sub: ["register rep", "sponsors"], top: '86.5%' }
+          { id: "hero", sub: ["START"], top: "0%" },
+          { id: "anchor-theme", sub: ["Theme"], top: "3%" },
+          { id: "anchor-gallery", sub: ["Gallery"], top: "13%" },
+          ...(featuredEventsEnabled && curatedEvents.length > 0
+            ? [{ id: "featured-events", sub: ["Highlights"], top: "54%" }]
+            : []),
+          { id: "leaders", sub: ["Mentors"], top: "62%" },
+          { id: "founder", sub: ["Founders"], top: "67%" },
+          { id: "builders", sub: ["Meet the Team"], top: "77%" },
+          { id: "destiny", sub: ["register rep", "sponsors"], top: "86.5%" },
         ].map((chap, i) => (
           <div
             key={i}
             className="chapter-marker-group absolute left-0 w-full"
             style={{ top: chap.top }}
           >
-            {chap.sub && chap.sub.map((s, si) => (
-              <div
-                key={si}
-                className="sub-point cursor-pointer group/sub flex items-center gap-4"
-                onClick={() => scrollToSection(chap.id)}
-              >
-                <div className="marker-dot group-hover/sub:scale-125 transition-transform" />
-                <span className="sub-label group-hover/sub:text-[#FFB464]">{s}</span>
-              </div>
-            ))}
+            {chap.sub &&
+              chap.sub.map((s, si) => (
+                <div
+                  key={si}
+                  className="sub-point cursor-pointer group/sub flex items-center gap-4"
+                  onClick={() => scrollToSection(chap.id)}
+                >
+                  <div className="marker-dot group-hover/sub:scale-125 transition-transform" />
+                  <span className="sub-label group-hover/sub:text-[#FFB464]">
+                    {s}
+                  </span>
+                </div>
+              ))}
           </div>
         ))}
       </div>
@@ -702,14 +822,23 @@ export default function Home() {
       >
         {/* Pinned Section Navigation Anchors (Invisible) */}
         <div className="absolute top-0 left-0 w-full h-0 pointer-events-none select-none">
-          <div id="anchor-theme" className="absolute" style={{ top: '100vh' }} />
-          <div id="anchor-gallery" className="absolute" style={{ top: '320vh' }} />
+          <div
+            id="anchor-theme"
+            className="absolute"
+            style={{ top: "100vh" }}
+          />
+          <div
+            id="anchor-gallery"
+            className="absolute"
+            style={{ top: "320vh" }}
+          />
         </div>
 
         {/* HERO: SACRED SKULL PORTAL */}
         <section id="hero" className="hero-section hero-portal">
           {/* Background illustration */}
-          <img loading="lazy"
+          <img
+            loading="lazy"
             src={skullBg}
             className="hero-bg-illo grayscale-[80%]"
             alt="Void"
@@ -720,7 +849,8 @@ export default function Home() {
           <div className="hero-bottom-mask" />
 
           {/* Main Center Skull (Skull Pro) */}
-          <img loading="lazy"
+          <img
+            loading="lazy"
             src={mainSkullImg}
             className="main-skull"
             alt="The Core"
@@ -731,7 +861,8 @@ export default function Home() {
           />
 
           {/* Hugging Faces (Split-Face Reveal - framing the center) */}
-          <img loading="lazy"
+          <img
+            loading="lazy"
             src={leftFaceImg}
             className="hero-face face-left"
             style={{
@@ -740,7 +871,8 @@ export default function Home() {
             }}
             alt="Left Protector"
           />
-          <img loading="lazy"
+          <img
+            loading="lazy"
             src={rightFaceImg}
             className="hero-face face-right"
             style={{
@@ -752,11 +884,10 @@ export default function Home() {
 
           {/* LANDING PAGE CONTENT: Individual Control Slots */}
           <div className="relative z-[30] hero-portal-content h-full w-full flex flex-col items-center justify-center">
-
-
             {/* SLOT 2: TITLE + DATES — tight grouped block */}
             <div className="flex flex-col items-center">
-              <img loading="lazy"
+              <img
+                loading="lazy"
                 src={titleFont}
                 className="h-[45vh] md:h-[55vh] lg:h-[65vh] xl:h-[70vh] w-auto object-contain drop-shadow-[0_0_120px_rgba(255,180,100,0.6)] transition-all duration-700"
                 alt="Sahotsava"
@@ -774,6 +905,19 @@ export default function Home() {
             <div className="relative mt-8 flex flex-col items-center gap-4">
               {/* Sacred inscription buttons */}
               <div className="flex items-stretch gap-3">
+                {/* SPONSOR */}
+                <a
+                  href={import.meta.env.VITE_SPONSOR_REDIRECT}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 border-[#FFB464]/60 hover:border-[#FFB464]/80 bg-[#FFB464]/5 hover:bg-[#FFB464]/10 backdrop-blur-sm transition-all duration-400"
+                >
+                  <span className="text-[#FFB464] text-sm">✦</span>
+                  <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold">
+                    Become a Sponsor
+                  </span>
+                  <span className="block h-[1.5px] w-6 bg-[#FFB464]/70 group-hover:w-10 group-hover:bg-[#FFB464] transition-all duration-500 ease-out" />
+                </a>
 
                 {/* LOGIN */}
                 {registrationOpen ? (
@@ -782,16 +926,22 @@ export default function Home() {
                     className="group flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 border-white/60 hover:border-white bg-white/25 hover:bg-white/35 backdrop-blur-sm transition-all duration-400"
                   >
                     <span className="text-[#FFB464] text-sm">✦</span>
-                    <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold">Login</span>
+                    <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold">
+                      Login
+                    </span>
                     <span className="block h-[1.5px] w-6 bg-white/70 group-hover:w-10 group-hover:bg-[#FFB464] transition-all duration-500 ease-out" />
                   </a>
                 ) : (
                   <div
-                    onClick={() => toast.info("Registration is currently restricted.")}
+                    onClick={() =>
+                      toast.info("Registration is currently restricted.")
+                    }
                     className="flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 border-white/30 bg-white/10 backdrop-blur-sm cursor-pointer"
                   >
                     <span className="text-white/50 text-sm">✦</span>
-                    <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white/50 font-bold">Closed</span>
+                    <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white/50 font-bold">
+                      Closed
+                    </span>
                     <span className="block h-[1.5px] w-6 bg-white/30" />
                   </div>
                 )}
@@ -799,24 +949,32 @@ export default function Home() {
                 {/* RESULTS */}
                 <button
                   onClick={() => {
-                    if (resultMode) navigate('/hall-of-fame');
-                    else toast.info("Result Portal is in Administrative Standby.");
+                    if (resultMode) navigate("/hall-of-fame");
+                    else
+                      toast.info("Result Portal is in Administrative Standby.");
                   }}
-                  className={`group flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 backdrop-blur-sm transition-all duration-400 ${resultMode
-                      ? 'border-white/60 hover:border-white bg-white/25 hover:bg-white/35'
-                      : 'border-white/30 bg-white/10'
-                    }`}
+                  className={`group flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 backdrop-blur-sm transition-all duration-400 ${
+                    resultMode
+                      ? "border-white/60 hover:border-white bg-white/25 hover:bg-white/35"
+                      : "border-white/30 bg-white/10"
+                  }`}
                 >
                   {resultMode ? (
                     <>
-                      <span className="text-emerald-400 text-sm group-hover:text-emerald-300 transition-colors duration-400">◈</span>
-                      <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold group-hover:text-emerald-300 transition-colors duration-400">Results</span>
+                      <span className="text-emerald-400 text-sm group-hover:text-emerald-300 transition-colors duration-400">
+                        ◈
+                      </span>
+                      <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold group-hover:text-emerald-300 transition-colors duration-400">
+                        Results
+                      </span>
                       <span className="block h-[1.5px] w-6 bg-white/70 group-hover:w-10 group-hover:bg-emerald-400 transition-all duration-500 ease-out" />
                     </>
                   ) : (
                     <>
                       <span className="text-white/50 text-sm">◈</span>
-                      <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white/50 font-bold">Results</span>
+                      <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white/50 font-bold">
+                        Results
+                      </span>
                       <span className="block h-[1.5px] w-6 bg-white/30" />
                     </>
                   )}
@@ -830,8 +988,12 @@ export default function Home() {
                     rel="noopener noreferrer"
                     className="group flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 border-amber-400/40 hover:border-amber-400 bg-amber-400/10 hover:bg-amber-400/20 backdrop-blur-sm transition-all duration-400"
                   >
-                    <span className="text-amber-400 text-sm group-hover:scale-125 transition-transform duration-400">▼</span>
-                    <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold group-hover:text-amber-300 transition-colors duration-400">Brochure</span>
+                    <span className="text-amber-400 text-sm group-hover:scale-125 transition-transform duration-400">
+                      ▼
+                    </span>
+                    <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold group-hover:text-amber-300 transition-colors duration-400">
+                      Brochure
+                    </span>
                     <span className="block h-[1.5px] w-6 bg-amber-400/50 group-hover:w-10 group-hover:bg-amber-400 transition-all duration-500 ease-out" />
                   </a>
                 )}
@@ -846,7 +1008,10 @@ export default function Home() {
           </div>
 
           {/* IN-PLACE REVEAL: THE ABOUT CONTENT */}
-          <div id="chapter-theme" className="about-reveal-layer absolute inset-0 z-[100]">
+          <div
+            id="chapter-theme"
+            className="about-reveal-layer absolute inset-0 z-[100]"
+          >
             <div className="about-reveal-bg">
               <img loading="lazy" src={theOneByShubho} alt="" />
               <div className="absolute inset-0 bg-black/60" />
@@ -865,38 +1030,25 @@ export default function Home() {
               <div className="max-w-3xl mx-auto pt-10 border-t border-white/10">
                 <p className="font-outfit text-white/90 text-base md:text-lg leading-relaxed text-justify">
                   Technosahotsava 2026, the annual cultural fest of Techno India
-                  University, stands as a distinguished celebration of artistic
-                  excellence, cultural diversity, and transformative expression.
-                  Curated and hosted by Team Sanskaran, the official cultural
-                  club of the university, the fest reflects a commitment to
-                  nurturing creativity, leadership, and collaborative spirit
-                  among students. This year’s theme, “Metamorphosis of Divine,”
-                  reflects the spirit of transformation, growth, and elevated
-                  expression that defines Technosahotsava 2026. It symbolizes
-                  the journey of evolving from potential to excellence, from
-                  imagination to realization. The theme embodies the belief that
-                  within every individual lies a spark of brilliance that, when
-                  nurtured through art, culture, and collaboration, transforms
-                  into something extraordinary. Through this concept,
-                  Technosahotsava celebrates the power of change, creativity,
-                  and the continuous evolution of talent into its most refined
-                  and impactful form. Technosahotsava 2026 is envisioned as a
-                  platform where talent transcends boundaries, ideas converge,
-                  and creativity transforms into meaningful expression. Through
-                  this theme, the fest celebrates growth, resilience, and the
-                  continuous evolution of excellence, making it not just an
-                  event, but an inspiring experience of transformation and
-                  unity.
+                  University, celebrates creativity and transformation. 
+                  Curated by Team Sanskaran, it unites talent and ideas.
+                  The theme, “Metamorphosis of the Divine: Where the
+                  universe expands in grandeur and the divine descends into the
+                  void,” reflects growth, evolution, and powerful expression.
                 </p>
               </div>
             </div>
           </div>
 
           {/* IN-PLACE REVEAL: THE GALLERY CONTENT (CHAPTER 02) */}
-          <div id="chapter-gallery" className="gallery-reveal-layer absolute inset-0 opacity-0 pointer-events-none flex flex-col justify-center overflow-hidden z-[300]">
+          <div
+            id="chapter-gallery"
+            className="gallery-reveal-layer absolute inset-0 opacity-0 pointer-events-none flex flex-col justify-center overflow-hidden z-[300]"
+          >
             {/* Section Background with Overlay (Starts Hidden) */}
             <div className="gallery-bg-container absolute inset-0 z-0 opacity-0">
-              <img loading="lazy"
+              <img
+                loading="lazy"
                 src={bg6}
                 className="w-full h-full object-cover opacity-80"
                 alt=""
@@ -925,7 +1077,7 @@ export default function Home() {
                 [g13, g1, g5],
                 [g2, g4, g8],
                 [g3, g7, g11],
-                [g14, g10, g6]
+                [g14, g10, g6],
               ].map((imgGroup, i) => (
                 <GalleryCard key={i} images={imgGroup} index={i} />
               ))}
@@ -933,7 +1085,8 @@ export default function Home() {
             {/* FINAL HIGHLIGHT - SEPARATE FROM ROWS */}
             <div className="gallery-final-highlight absolute inset-0 z-[100] flex items-center justify-center opacity-0 pointer-events-none bg-black">
               <div className="w-[85vw] md:w-[70vw] aspect-video relative overflow-hidden ring-2 ring-[#FFB464] shadow-[0_0_150px_rgba(255,180,100,0.6)] rounded-sm">
-                <img loading="lazy"
+                <img
+                  loading="lazy"
                   src={g14}
                   className="w-full h-full object-cover"
                   alt="Final Memory"
@@ -959,7 +1112,8 @@ export default function Home() {
                   className="absolute top-0 h-full w-[100vw]"
                   style={{ left: `-${i * 10}vw` }}
                 >
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={bg6}
                     className="w-full h-full object-cover opacity-80"
                     alt=""
@@ -990,7 +1144,8 @@ export default function Home() {
                   </h2>
                 </div>
                 <p className="font-outfit text-white/30 text-[10px] md:text-sm uppercase tracking-[0.4em] max-w-xs text-right leading-relaxed">
-                  The heart of the festival. Selected chronicles of divine expression.
+                  The heart of the festival. Selected chronicles of divine
+                  expression.
                 </p>
               </div>
 
@@ -1017,7 +1172,10 @@ export default function Home() {
                         <span className="font-outfit text-[9px] text-white/40 uppercase tracking-widest">
                           {event.format}
                         </span>
-                        <Star size={12} className="text-[#FFB464] opacity-30 group-hover:opacity-100 transition-opacity" />
+                        <Star
+                          size={12}
+                          className="text-[#FFB464] opacity-30 group-hover:opacity-100 transition-opacity"
+                        />
                       </div>
                     </div>
                   </div>
@@ -1066,7 +1224,8 @@ export default function Home() {
                 className="leader-circle flex flex-col items-center gap-6 w-full"
               >
                 <div className="w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 rounded-full overflow-hidden border-2 border-black/10 shadow-xl">
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={leader.image}
                     className="w-full h-full object-cover"
                     alt={leader.name}
@@ -1110,7 +1269,8 @@ export default function Home() {
             <div className="founder-content grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
               <div className="relative group">
                 <div className="aspect-[4/5] overflow-hidden bg-gray-50 border border-black/5 shadow-2xl">
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={founderImg}
                     className="w-full h-full object-cover hover:scale-105 transition-all duration-700 ease-in-out"
                     alt="Sayan Chakraborty"
@@ -1129,7 +1289,8 @@ export default function Home() {
 
               <div className="relative group">
                 <div className="aspect-[4/5] overflow-hidden bg-gray-50 border border-black/5 shadow-2xl">
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={parthaImg}
                     className="w-full h-full object-cover hover:scale-105 transition-all duration-700 ease-in-out"
                     alt="Partha Sarathi Pal"
@@ -1160,10 +1321,10 @@ export default function Home() {
                   <p>
                     Long before Technosahotsava became the grand cultural
                     phenomenon it is today, it existed as a dream in the mind of
-                    these individuals who believed that art, culture, and youthful
-                    passion could create something extraordinary. With this
-                    vision, they founded Team Sanskaran, laying the cultural
-                    foundation of the university and bringing together
+                    these individuals who believed that art, culture, and
+                    youthful passion could create something extraordinary. With
+                    this vision, they founded Team Sanskaran, laying the
+                    cultural foundation of the university and bringing together
                     individuals who shared the same fire for creativity and
                     expression.
                   </p>
@@ -1192,8 +1353,8 @@ export default function Home() {
                   <p>
                     Technosahotsava stands today not just as a festival, but as
                     a testament to the passion, determination, and cultural
-                    spirit ignited by the founder who dared to imagine
-                    something timeless.
+                    spirit ignited by the founder who dared to imagine something
+                    timeless.
                   </p>
                 </div>
               </div>
@@ -1218,80 +1379,92 @@ export default function Home() {
                 name: "Pritha",
                 id: "01",
                 image: prithaPic,
-                insta: "https://www.instagram.com/_.p_r_i_t_h_a._?igsh=MWUxMHd6d2xpdndmcQ==",
+                insta:
+                  "https://www.instagram.com/_.p_r_i_t_h_a._?igsh=MWUxMHd6d2xpdndmcQ==",
                 contact: "+91 76996 92411",
               },
               {
                 name: "Ashoke",
                 id: "02",
                 image: ashokePic,
-                insta: "https://www.instagram.com/ashokemaity_?igsh=OTFqaGswdjY1ZnEx",
+                insta:
+                  "https://www.instagram.com/ashokemaity_?igsh=OTFqaGswdjY1ZnEx",
                 contact: "+91 8597347423",
               },
               {
                 name: "Rohit",
                 id: "03",
                 image: rohitPic,
-                insta: "https://www.instagram.com/rohit_kumar_samanta?igsh=d251NjhvM2Q5aXow",
+                insta:
+                  "https://www.instagram.com/rohit_kumar_samanta?igsh=d251NjhvM2Q5aXow",
                 contact: "+91 6289 896197",
               },
               {
                 name: "Shrayan",
                 id: "04",
                 image: shrayanPic,
-                insta: "https://www.instagram.com/shrayan._.music?igsh=MXNnc2UxaGJua2QzZw==",
+                insta:
+                  "https://www.instagram.com/shrayan._.music?igsh=MXNnc2UxaGJua2QzZw==",
                 contact: "+91 70474 80580",
               },
               {
                 name: "Shrijita",
                 id: "05",
                 image: shrijitaPic,
-                insta: "https://www.instagram.com/shree_chakraborty06?igsh=MXJ6d3Q4NHd1eG0zYw==",
+                insta:
+                  "https://www.instagram.com/shree_chakraborty06?igsh=MXJ6d3Q4NHd1eG0zYw==",
               },
               {
                 name: "Roshni",
                 id: "06",
                 image: roshniPic,
-                insta: "https://www.instagram.com/rosshniii18?igsh=MWo1bG43dDlzdmZ5dg==",
+                insta:
+                  "https://www.instagram.com/rosshniii18?igsh=MWo1bG43dDlzdmZ5dg==",
               },
               {
                 name: "Shreyoshee",
                 id: "07",
                 image: shreyosheePic,
-                insta: "https://www.instagram.com/estella_seed_78?igsh=bWNjYm04ZWUyd2gz",
+                insta:
+                  "https://www.instagram.com/estella_seed_78?igsh=bWNjYm04ZWUyd2gz",
               },
               {
                 name: "Subhadeep",
                 id: "08",
                 image: subhadeepPic,
-                insta: "https://www.instagram.com/s_u_b_h_a_d_e_e_p.1?igsh=M3R5Nzd0MXo0aXQ2",
+                insta:
+                  "https://www.instagram.com/s_u_b_h_a_d_e_e_p.1?igsh=M3R5Nzd0MXo0aXQ2",
               },
               {
                 name: "Swastick",
                 id: "09",
                 image: swastickPic,
-                insta: "https://www.instagram.com/itz___swastick?igsh=MWNobXI2ZDVremxqOQ==",
+                insta:
+                  "https://www.instagram.com/itz___swastick?igsh=MWNobXI2ZDVremxqOQ==",
               },
               {
                 name: "Tathagata",
                 id: "10",
                 image: tathagataPic,
-                insta: "https://www.instagram.com/tathagat19?igsh=MWl2OTc2OHE4OHp3aA==",
+                insta:
+                  "https://www.instagram.com/tathagat19?igsh=MWl2OTc2OHE4OHp3aA==",
               },
               {
                 name: "Sanskar",
                 id: "11",
                 image: sanskarPic,
-                insta: "https://www.instagram.com/sanskar.2501?igsh=MzdlcWxwdThmY21i",
+                insta:
+                  "https://www.instagram.com/sanskar.2501?igsh=MzdlcWxwdThmY21i",
               },
             ].map((member, i) => {
-              const isSanskar = member.name === 'Sanskar';
+              const isSanskar = member.name === "Sanskar";
 
               return (
                 <div
                   key={member.id}
-                  className={`architect-card flex flex-col shadow-sm bg-white ${isSanskar ? 'mt-8 md:mt-0' : ''
-                    }`}
+                  className={`architect-card flex flex-col shadow-sm bg-white ${
+                    isSanskar ? "mt-8 md:mt-0" : ""
+                  }`}
                 >
                   <div className="aspect-[3/4] relative overflow-hidden">
                     <img
@@ -1312,7 +1485,10 @@ export default function Home() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 text-black/50 hover:text-[#E4405F] transition-all duration-300 group/insta"
                       >
-                        <svg className="w-4 h-4 fill-current transition-transform group-hover/insta:rotate-12 group-hover/insta:scale-110" viewBox="0 0 24 24">
+                        <svg
+                          className="w-4 h-4 fill-current transition-transform group-hover/insta:rotate-12 group-hover/insta:scale-110"
+                          viewBox="0 0 24 24"
+                        >
                           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                         </svg>
                         <span className="font-outfit text-[10px] uppercase font-bold tracking-[0.3em]">
@@ -1321,10 +1497,13 @@ export default function Home() {
                       </a>
                       {member.contact && (
                         <a
-                          href={`tel:${member.contact.replace(/\s+/g, '')}`}
+                          href={`tel:${member.contact.replace(/\s+/g, "")}`}
                           className="flex items-center gap-3 text-black/50 hover:text-green-600 transition-all duration-300 group/call"
                         >
-                          <svg className="w-4 h-4 fill-current transition-transform group-hover/call:scale-110 group-hover/call:-rotate-12" viewBox="0 0 24 24">
+                          <svg
+                            className="w-4 h-4 fill-current transition-transform group-hover/call:scale-110 group-hover/call:-rotate-12"
+                            viewBox="0 0 24 24"
+                          >
                             <path d="M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z" />
                           </svg>
                           <span className="font-outfit text-[10px] uppercase font-bold tracking-[0.3em]">
@@ -1366,40 +1545,93 @@ export default function Home() {
 
             {/* Modular Crossroads Grid: 5 Premium Cards */}
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-6">
-
               {/* 1. Community (Large Feature) */}
-              <button
-                onClick={() => navigate('/college-rep-registration')}
-                className="md:col-span-3 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
-              >
+              <div className="md:col-span-3 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#FFB464]/0 via-transparent to-[#FFB464]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">01 / Community</span>
-                <h3 className="relative z-10 font-medieval text-4xl text-white group-hover:translate-x-4 transition-transform duration-700 ease-out">Become College Rep</h3>
-                <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
-              </button>
+                <div
+                  className="relative z-10 flex flex-col h-full cursor-pointer"
+                  onClick={() => navigate("/college-rep-registration")}
+                >
+                  <span className="font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">
+                    01 / Community
+                  </span>
+                  <h3 className="font-medieval text-4xl text-white group-hover:translate-x-4 transition-transform duration-700 ease-out">
+                    Become College Rep
+                  </h3>
+                  <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
+                </div>
+
+                {/* Secure Download Trigger for Reference List */}
+                {collegeReferenceUrl && (
+                  <div className="absolute bottom-10 right-10 z-20">
+                    <a
+                      href={collegeReferenceUrl}
+                      download="Sahotsava_Institution_Registry_Reference.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 border border-[#FFB464]/20 hover:border-[#FFB464]/50 bg-[#FFB464]/5 hover:bg-[#FFB464]/10 transition-all text-[8px] uppercase tracking-[0.3em] text-[#FFB464]/40 hover:text-[#FFB464] no-underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      Reference List
+                    </a>
+                  </div>
+                )}
+              </div>
 
               {/* 2. Literature */}
               <button
-                onClick={() => toast.info("Brochure releasing soon!")}
+                onClick={() =>
+                  officialBrochureUrl
+                    ? window.open(officialBrochureUrl, "_blank")
+                    : toast.info("Brochure releasing soon!")
+                }
                 className="md:col-span-3 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-[#FFB464]/0 via-transparent to-[#FFB464]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">02 / Literature</span>
-                <h3 className="relative z-10 font-medieval text-4xl text-white group-hover:translate-x-4 transition-transform duration-700 ease-out">Official Brochure</h3>
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">
+                  02 / Literature
+                </span>
+                <h3 className="relative z-10 font-medieval text-4xl text-white group-hover:translate-x-4 transition-transform duration-700 ease-out">
+                  Official Brochure
+                </h3>
                 <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
               </button>
 
               {/* 4. Allies */}
-              <button onClick={() => setIsWarping(true)} className="md:col-span-2 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
-                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">04 / Allies</span>
-                <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">Our Sponsors</h3>
+              <button
+                onClick={() => setIsWarping(true)}
+                className="md:col-span-2 group relative text-left overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]"
+              >
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">
+                  04 / Allies
+                </span>
+                <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">
+                  Our Sponsors
+                </h3>
                 <div className="mt-12 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
               </button>
 
               {/* 5. Presence */}
               <div className="md:col-span-2 group relative overflow-hidden bg-white/[0.03] border border-white/10 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464]/50 hover:bg-white/[0.05]">
-                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">05 / Presence</span>
-                <h3 className="relative z-10 font-medieval text-3xl text-white mb-6">Our Socials</h3>
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">
+                  05 / Presence
+                </span>
+                <h3 className="relative z-10 font-medieval text-3xl text-white mb-6">
+                  Our Socials
+                </h3>
 
                 <div className="relative z-10 space-y-4">
                   <a
@@ -1411,18 +1643,24 @@ export default function Home() {
                     <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
                       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                     </svg>
-                    <span className="font-outfit text-xs uppercase tracking-widest font-bold">Instagram</span>
+                    <span className="font-outfit text-xs uppercase tracking-widest font-bold">
+                      Instagram
+                    </span>
                   </a>
                   <div className="flex flex-col gap-1">
                     <span
                       className="font-outfit text-xs text-white/60 select-all cursor-text py-2 px-3 bg-white/5 border border-white/5 rounded block"
                       onClick={() => {
-                        navigator.clipboard.writeText("technosahotsava@gmail.com");
+                        navigator.clipboard.writeText(
+                          "technosahotsava@gmail.com",
+                        );
                       }}
                     >
                       technosahotsava@gmail.com
                     </span>
-                    <span className="text-[8px] text-white/20 uppercase tracking-widest pl-1">Click to select (or copy)</span>
+                    <span className="text-[8px] text-white/20 uppercase tracking-widest pl-1">
+                      Click to select (or copy)
+                    </span>
                   </div>
                 </div>
                 <div className="mt-8 h-[1px] w-12 bg-white/20 group-hover:w-full transition-all duration-1000 origin-left" />
@@ -1430,61 +1668,41 @@ export default function Home() {
 
               {/* 5. Architect (Developer - New) */}
               <button
-                onClick={() => navigate('/developers')}
+                onClick={() => navigate("/developers")}
                 className="md:col-span-2 group relative text-left overflow-hidden bg-[#FFB464]/5 border border-[#FFB464]/20 p-10 backdrop-blur-md transition-all duration-700 hover:border-[#FFB464] hover:bg-[#FFB464]/10"
               >
-                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">06 / Architect</span>
-                <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">The Developers</h3>
+                <span className="relative z-10 font-medieval text-[#FFB464] text-[10px] uppercase tracking-[0.6em] mb-8 block">
+                  06 / Architect
+                </span>
+                <h3 className="relative z-10 font-medieval text-3xl text-white group-hover:translate-x-4 transition-transform duration-700">
+                  The Developers
+                </h3>
                 <div className="mt-12 h-[1px] w-12 bg-[#FFB464]/30 group-hover:w-full transition-all duration-1000 origin-left" />
               </button>
-
             </div>
           </div>
 
-          {/* ─── PARTICIPATING INSTITUTIONS (Dynamic Marquee) ─── */}
-          {collegeList && collegeList.length > 0 && (
-            <div className="relative z-10 w-full mt-32 border-y border-white/5 py-16 overflow-hidden bg-white/[0.01] backdrop-blur-3xl group">
-              <div className="max-w-7xl mx-auto px-6 mb-12">
-                <div className="flex items-center gap-6">
-                  <div className="text-[#FFB464] font-medieval text-[10px] uppercase tracking-[0.8em] opacity-40">Network_Core</div>
-                  <div className="h-[1px] flex-1 bg-gradient-to-r from-[#FFB464]/20 to-transparent" />
-                </div>
-                <h2 className="text-white/80 font-medieval text-5xl md:text-7xl uppercase tracking-tighter mt-4 leading-none">Participating<br/><span className="text-[#FFB464]">Institutions</span></h2>
-              </div>
-
-              <div className="relative flex whitespace-nowrap overflow-hidden">
-                <div className="flex animate-marquee hover:[animation-play-state:paused] gap-12 md:gap-24 items-center py-6">
-                  {[...collegeList, ...collegeList].map((c, i) => (
-                    <div key={i} className="flex items-center gap-6 md:gap-10 shrink-0">
-                      <span className="text-white/20 font-medieval text-3xl md:text-5xl select-none">◈</span>
-                      <span className="text-white font-medieval text-4xl md:text-8xl uppercase tracking-tighter hover:text-[#FFB464] transition-colors duration-500 cursor-default">
-                        {typeof c === 'string' ? c : (c.display || c.original || 'INSTITUTION')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="absolute inset-y-0 left-0 w-32 md:w-64 bg-gradient-to-r from-black to-transparent z-20 pointer-events-none" />
-              <div className="absolute inset-y-0 right-0 w-32 md:w-64 bg-gradient-to-l from-black to-transparent z-20 pointer-events-none" />
-            </div>
-          )}
 
           {/* MINIMALIST IDENTITY FOOTER (Redesigned for balance) */}
           <div className="relative z-10 w-full max-w-7xl mx-auto pt-12 pb-4 border-t border-white/5 mt-10 translate-y-[-0px]">
             <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-16">
-
               {/* Left Identity: Institutional (Techno India) */}
               <div className="flex flex-col items-center md:items-start group cursor-default">
                 <div className="flex items-center gap-6 mb-4 p-2 bg-white/5 rounded-lg border border-white/10">
-                  <img loading="lazy" src={sofTigLogo} className="h-6 md:h-12 w-auto object-contain" alt="Techno India Logo" />
+                  <img
+                    loading="lazy"
+                    src={sofTigLogo}
+                    className="h-6 md:h-12 w-auto object-contain"
+                    alt="Techno India Logo"
+                  />
                 </div>
               </div>
 
               {/* Center Branding: The Copyright Statement */}
               <div className="flex flex-col items-center gap-4">
                 <p className="font-outfit text-[9px] md:text-[10px] text-white/20 uppercase tracking-[0.4em] leading-relaxed text-center max-w-md">
-                  &copy; 2026 techno sahosava. All rights Reserved | created with passion by Team Sanskaran
+                  &copy; 2026 techno sahosava. All rights Reserved | created
+                  with passion by Team Sanskaran
                 </p>
                 <div className="flex items-center gap-6 opacity-40">
                   <div className="h-[1px] w-8 bg-white/20" />
@@ -1496,19 +1714,22 @@ export default function Home() {
               {/* Right Identity: Creative & Event Cluster */}
               <div className="flex flex-col items-center md:items-end group cursor-default">
                 <div className="flex items-center gap-4 md:gap-8 mb-6 bg-white/5 p-4 rounded-xl border border-white/10">
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={sahotsavaLogo}
                     className="h-6 md:h-12 w-auto object-contain"
                     alt="Sahotsava logo"
                   />
                   <div className="h-6 w-[1px] bg-white/20" />
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={sanskaranLogo}
                     className="h-10 md:h-18 w-auto object-contain"
                     alt="Team Sanskaran"
                   />
                   <div className="h-6 w-[1px] bg-white/20" />
-                  <img loading="lazy"
+                  <img
+                    loading="lazy"
                     src={cameraLogo}
                     className="h-10 md:h-12 w-auto object-contain"
                     alt="Camera"
@@ -1809,5 +2030,3 @@ export default function Home() {
     </div>
   );
 }
-
-

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { io } from 'socket.io-client';
 import { auth } from '../services/firebase';
-import { 
+import {
     createUserWithEmailAndPassword,
     sendEmailVerification,
     signOut,
@@ -21,7 +21,7 @@ import cameraLogo from '../assets/logos/Chitraka white logo.png';
 const CollegeRepRegistration = () => {
     const navigate = useNavigate();
     const [colleges, setColleges] = useState([]);
-    const [collegeList, setCollegeList] = useState([]); 
+    const [collegeList, setCollegeList] = useState([]);
     const [showMasterList, setShowMasterList] = useState(false);
     const [isCollegesOpen, setIsCollegesOpen] = useState(true);
     const [isLoadingColleges, setIsLoadingColleges] = useState(false);
@@ -29,11 +29,12 @@ const CollegeRepRegistration = () => {
     const [hasSecondRep, setHasSecondRep] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [registrationResult, setRegistrationResult] = useState(null);
-    
+    const [collegeReferenceUrl, setCollegeReferenceUrl] = useState('');
+
     // Verification States
     const [verificationStep, setVerificationStep] = useState(null); // 'email' | null
     const [isVerifying, setIsVerifying] = useState(false);
-    
+
     const [verificationStatus, setVerificationStatus] = useState({
         rep1Email: false,
         rep2Email: false,
@@ -78,6 +79,7 @@ const CollegeRepRegistration = () => {
             const response = await API.get(`${serverOrigin}/technoSahotsava2026/admin/registration-status`);
             const settings = response.data;
             setIsCollegesOpen(settings.colleges_open);
+            setCollegeReferenceUrl(settings.college_reference_url || '');
             const cListRaw = settings.college_list || [];
             const cListMapped = cListRaw.map(item => {
                 if (typeof item === 'string') return { original: item.toUpperCase(), display: '' };
@@ -117,7 +119,7 @@ const CollegeRepRegistration = () => {
 
     useEffect(() => {
         fetchColleges();
-        
+
         const rawUrl = import.meta.env.VITE_SERVER_URL;
         let socket;
         if (rawUrl) {
@@ -137,6 +139,9 @@ const CollegeRepRegistration = () => {
                 });
                 setCollegeList(updatedList);
             });
+            socket.on('collegeReferenceUpdate', (data) => {
+                setCollegeReferenceUrl(data.reference_url);
+            });
         }
         return () => {
             if (socket) socket.disconnect();
@@ -146,7 +151,7 @@ const CollegeRepRegistration = () => {
     // Real-time Automatic Status Detection with Silent Session Restoration
     useEffect(() => {
         if (!rep1.email || !rep1.email.includes('@') || !rep1.email.includes('.') || verificationStatus.rep1Email) return;
-        
+
         const timer = setTimeout(async () => {
             const email = rep1.email.toLowerCase();
             const repKey = 'rep1Email';
@@ -186,7 +191,7 @@ const CollegeRepRegistration = () => {
 
     useEffect(() => {
         if (!rep2.email || !rep2.email.includes('@') || !rep2.email.includes('.') || verificationStatus.rep2Email) return;
-        
+
         const timer = setTimeout(async () => {
             const email = rep2.email.toLowerCase();
             const repKey = 'rep2Email';
@@ -247,14 +252,14 @@ const CollegeRepRegistration = () => {
 
             if (res.data.success) {
                 const { college: fetchedCollege, ...repData } = res.data.data;
-                
+
                 // Cross-College Validation (Fraud Attempt Detection)
                 if (fetchedCollege && college && fetchedCollege.toLowerCase() !== college.toLowerCase()) {
                     toast.error(`🛑 ACCESS DENIED`, {
                         position: "top-center",
-                        autoClose: 2000 
+                        autoClose: 2000
                     });
-                    
+
                     // Throw user back to starting state by reloading
                     setTimeout(() => {
                         window.location.reload();
@@ -265,7 +270,7 @@ const CollegeRepRegistration = () => {
                 if (num === 1) {
                     setRep1(prev => ({ ...prev, ...repData }));
                     setVerificationStatus(prev => ({ ...prev, rep1DetailsFetched: true }));
-                    setIsEditing(prev => ({ ...prev, rep1: false })); 
+                    setIsEditing(prev => ({ ...prev, rep1: false }));
                 } else {
                     setRep2(prev => ({ ...prev, ...repData }));
                     setVerificationStatus(prev => ({ ...prev, rep2DetailsFetched: true }));
@@ -295,7 +300,7 @@ const CollegeRepRegistration = () => {
 
         try {
             let activeUser = auth.currentUser;
-            
+
             // If already signed in to this email, skip re-sign-in
             if (activeUser && activeUser.email?.toLowerCase() !== email.toLowerCase()) {
                 await signOut(auth);
@@ -314,18 +319,18 @@ const CollegeRepRegistration = () => {
                         } else throw signErr;
                     }
                 }
-                
+
                 if (activeUser.emailVerified) {
                     // Update Cache and State
                     const idToken = await activeUser.getIdToken();
                     const verifiedCache = JSON.parse(localStorage.getItem('sahotsava_verified_emails') || '{}');
                     verifiedCache[email] = true;
                     localStorage.setItem('sahotsava_verified_emails', JSON.stringify(verifiedCache));
-                    
-                    setVerificationStatus(prev => ({ 
-                        ...prev, 
-                        [repKey]: true, 
-                        [`rep${num}IdToken`]: idToken 
+
+                    setVerificationStatus(prev => ({
+                        ...prev,
+                        [repKey]: true,
+                        [`rep${num}IdToken`]: idToken
                     }));
                     if (isManualTrigger) toast.success("Email is already verified! You can proceed.");
                     fetchExistingDetails(num, email, idToken);
@@ -341,18 +346,18 @@ const CollegeRepRegistration = () => {
 
             if (activeUser) {
                 setVerificationStep({ type: 'email', rep: num, user: activeUser });
-                
+
                 const checkInterval = setInterval(async () => {
                     await activeUser.reload();
                     if (activeUser.emailVerified) {
                         clearInterval(checkInterval);
-                        
+
                         const idToken = await activeUser.getIdToken();
                         // Update Cache and State
                         const verifiedCache = JSON.parse(localStorage.getItem('sahotsava_verified_emails') || '{}');
                         verifiedCache[email] = true;
                         localStorage.setItem('sahotsava_verified_emails', JSON.stringify(verifiedCache));
-                        
+
                         setVerificationStatus(prev => ({ ...prev, [repKey]: true, [`rep${num}IdToken`]: idToken }));
                         setVerificationStep(null);
                         fetchExistingDetails(num, email, idToken);
@@ -380,7 +385,7 @@ const CollegeRepRegistration = () => {
         if (hasSecondRep) {
             const otherNum = num === 1 ? 2 : 1;
             const otherRep = num === 1 ? rep2 : rep1;
-            
+
             if (email && otherRep.email && email.toLowerCase() === otherRep.email.toLowerCase()) {
                 if (num === 2) {
                     toast.error("this is a 1st rep mail use second rep mail");
@@ -395,12 +400,12 @@ const CollegeRepRegistration = () => {
 
     const handlePhoneChange = (repNum, name, value) => {
         const digits = value.replace(/\D/g, '').substring(0, 10);
-        
+
         // Immediate Duplicate Check
         if (hasSecondRep && digits.length === 10) {
             const otherRep = repNum === 1 ? rep2 : rep1;
             const otherValue = name === 'phone' ? otherRep.phone : otherRep.whatsapp;
-            
+
             if (digits === otherValue) {
                 toast.error(`This ${name} number belongs to the ${repNum === 1 ? '2nd' : '1st'} Representative. Each representative must have unique contact details.`);
                 if (repNum === 1) setRep1({ ...rep1, [name]: '' });
@@ -487,12 +492,12 @@ const CollegeRepRegistration = () => {
             });
 
             const reps = [];
-            
+
             // Only include reps that are NOT already in the database (fetched details)
             if (!verificationStatus.rep1DetailsFetched) {
                 reps.push(formatRep(rep1));
             }
-            
+
             if (hasSecondRep && !verificationStatus.rep2DetailsFetched) {
                 reps.push(formatRep(rep2));
             }
@@ -533,7 +538,7 @@ const CollegeRepRegistration = () => {
             {showSuccessModal && registrationResult && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
                     <div className="absolute inset-0 bg-black/95 backdrop-blur-xl animate-fadeIn" />
-                    
+
                     <div className="relative w-full max-w-xl bg-[#0a0a0b] border border-[#FFB464]/30 rounded-3xl overflow-hidden shadow-[0_0_100px_rgba(255,180,100,0.15)] animate-slideUp">
                         {/* Decorative Header */}
                         <div className="relative h-24 flex items-center justify-center bg-[#FFB464]/5 border-b border-[#FFB464]/20">
@@ -552,7 +557,7 @@ const CollegeRepRegistration = () => {
                             {/* Credentials Card */}
                             <div className="bg-white/5 border border-white/5 rounded-2xl p-8 space-y-6 relative group overflow-hidden">
                                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFB464" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFB464" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
                                 </div>
 
                                 <div className="space-y-1">
@@ -574,13 +579,13 @@ const CollegeRepRegistration = () => {
                             </div>
 
                             <div className="space-y-4 pt-4">
-                                <button 
+                                <button
                                     onClick={() => window.location.href = import.meta.env.VITE_REGISTER_URL || "/"}
                                     className="w-full py-4 bg-[#FFB464] text-black hover:bg-white transition-all font-bungee text-sm uppercase tracking-widest shadow-[0_0_30px_rgba(255,180,100,0.2)]"
                                 >
                                     ENTER LOGIN PORTAL
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => navigate('/')}
                                     className="w-full py-4 border-2 border-white/10 text-white/40 hover:text-white hover:border-white/40 transition-all font-bungee text-sm uppercase tracking-widest"
                                 >
@@ -615,7 +620,7 @@ const CollegeRepRegistration = () => {
                             </p>
                         </div>
 
-                        <button 
+                        <button
                             onClick={() => setVerificationStep(null)}
                             className="w-full text-[10px] text-white/20 uppercase tracking-[0.3em] hover:text-white transition-colors"
                         >
@@ -635,7 +640,7 @@ const CollegeRepRegistration = () => {
                 {/* Header */}
                 <div className="mb-16 border-b border-white/10 pb-12">
                     <div className="space-y-6">
-                        <button 
+                        <button
                             onClick={() => navigate('/', { state: { skipLoading: true } })}
                             className="text-[#FFB464] text-xs uppercase tracking-[0.4em] mb-4 flex items-center gap-2 hover:opacity-70 transition-opacity"
                         >
@@ -659,40 +664,24 @@ const CollegeRepRegistration = () => {
                         <div className="flex items-center gap-4 flex-wrap">
                             <span className="font-medieval text-[#FFB464] text-xl opacity-50">01</span>
                             <h2 className="font-medieval text-2xl uppercase tracking-widest text-[#FFB464]">Institutional Origin</h2>
-                            {/* Master List compact dropdown */}
-                            {collegeList.length > 0 && (
+                            {collegeReferenceUrl && (
                                 <div className="relative ml-auto">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowMasterList(prev => !prev)}
-                                        className="flex items-center gap-2 px-3 py-1.5 border border-white/20 hover:border-[#FFB464]/50 bg-white/5 hover:bg-white/10 transition-all text-[9px] uppercase tracking-[0.3em] text-white/50 hover:text-[#FFB464]"
+                                    <a
+                                        href={collegeReferenceUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 px-3 py-1.5 border border-[#FFB464]/20 hover:border-[#FFB464]/50 bg-[#FFB464]/5 hover:bg-[#FFB464]/10 transition-all text-[9px] uppercase tracking-[0.3em] text-[#FFB464]/70 hover:text-[#FFB464] no-underline"
                                     >
-                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                                        Master List ({collegeList.length})
-                                        <svg className={`w-3 h-3 transition-transform ${showMasterList ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                    </button>
-                                    {showMasterList && (
-                                        <div className="absolute right-0 top-full mt-1 w-72 bg-[#0a0a0b] border border-white/15 shadow-2xl z-50 max-h-56 overflow-y-auto">
-                                            {collegeList.map((c, i) => (
-                                                <div key={i} className="flex items-center gap-4 px-3 py-2 border-b border-white/5 hover:bg-white/5">
-                                                    <span className="text-[8px] text-[#FFB464]/40 font-mono w-6 shrink-0">{String(i+1).padStart(2,'0')}</span>
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[10px] text-white/50 uppercase tracking-tight">{c.original || c}</span>
-                                                        {c.display && (
-                                                            <span className="text-[9px] text-[#FFB464] uppercase font-bold tracking-wider">Named as: {c.display}</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                        Reference PDF
+                                    </a>
                                 </div>
                             )}
                         </div>
                         <div className="max-w-xl relative" ref={dropdownRef}>
                             <label className="block text-[10px] uppercase tracking-[0.2em] text-[#FFB464]/60 font-bold mb-3">Select Your Institution *</label>
-                            
-                            <div 
+
+                            <div
                                 onClick={() => isCollegesOpen && setIsDropdownOpen(!isDropdownOpen)}
                                 className={`w-full bg-white/5 border p-4 text-white transition-all font-outfit text-lg flex justify-between items-center cursor-pointer ${isDropdownOpen ? 'border-[#FFB464] ring-1 ring-[#FFB464]/30' : 'border-white/10'} ${!isCollegesOpen ? 'border-red-500/50 cursor-not-allowed opacity-50' : 'hover:border-[#FFB464]/50 hover:bg-white/10'}`}
                             >
@@ -712,7 +701,7 @@ const CollegeRepRegistration = () => {
                                 <div className="absolute top-full mt-2 w-full bg-[#0a0a0b] border border-[#FFB464]/30 rounded-2xl shadow-2xl z-50 overflow-hidden animate-slideDown">
                                     <div className="p-4 border-b border-white/10">
                                         <div className="relative">
-                                            <input 
+                                            <input
                                                 autoFocus
                                                 type="text"
                                                 placeholder="SEARCH COLLEGE NAME..."
@@ -731,14 +720,14 @@ const CollegeRepRegistration = () => {
                                             filteredColleges.map((c, i) => {
                                                 const collegeName = typeof c === 'string' ? c : c.name || c.college_name;
                                                 return (
-                                                    <div 
+                                                    <div
                                                         key={i}
                                                         onClick={() => {
                                                             if (collegeName !== college) {
                                                                 setCollege(collegeName);
                                                                 setIsDropdownOpen(false);
                                                                 setSearchTerm('');
-                                                                
+
                                                                 // Full Reset to prevent curiosity bypasses
                                                                 setRep1({ ...initialRepState });
                                                                 setRep2({ ...initialRepState });
@@ -787,54 +776,53 @@ const CollegeRepRegistration = () => {
                                 <h2 className="font-medieval text-2xl uppercase tracking-widest text-[#FFB464]">The First Representative</h2>
                             </div>
                             {verificationStatus.rep1DetailsFetched && (
-                                <button 
+                                <button
                                     type="button"
                                     onClick={() => setIsEditing(prev => ({ ...prev, rep1: !prev.rep1 }))}
-                                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                                        isEditing.rep1 
-                                        ? 'bg-[#FFB464] text-black shadow-[0_0_15px_rgba(255,180,100,0.3)]' 
-                                        : 'bg-white/5 text-white/40 hover:text-white hover:bg-white/10'
-                                    }`}
+                                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${isEditing.rep1
+                                            ? 'bg-[#FFB464] text-black shadow-[0_0_15px_rgba(255,180,100,0.3)]'
+                                            : 'bg-white/5 text-white/40 hover:text-white hover:bg-white/10'
+                                        }`}
                                 >
                                     {isEditing.rep1 ? 'Lock & Save' : 'Edit Details'}
                                 </button>
                             )}
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fadeIn">
                             <div className="space-y-2">
                                 <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">First Name *</label>
-                                <input 
+                                <input
                                     required
-                                    type="text" 
+                                    type="text"
                                     disabled={!college || !isCollegesOpen}
                                     readOnly={verificationStatus.rep1DetailsFetched && !isEditing.rep1}
                                     className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit uppercase ${(!college || !isCollegesOpen || (verificationStatus.rep1DetailsFetched && !isEditing.rep1)) ? 'opacity-30 cursor-not-allowed' : ''}`}
                                     value={rep1.firstName}
-                                    onChange={(e) => setRep1({...rep1, firstName: e.target.value.toUpperCase()})}
+                                    onChange={(e) => setRep1({ ...rep1, firstName: e.target.value.toUpperCase() })}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Middle Name</label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     disabled={!college || !isCollegesOpen}
                                     readOnly={verificationStatus.rep1DetailsFetched && !isEditing.rep1}
                                     className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit uppercase ${(!college || !isCollegesOpen || (verificationStatus.rep1DetailsFetched && !isEditing.rep1)) ? 'opacity-30 cursor-not-allowed' : ''}`}
                                     value={rep1.middleName}
-                                    onChange={(e) => setRep1({...rep1, middleName: e.target.value.toUpperCase()})}
+                                    onChange={(e) => setRep1({ ...rep1, middleName: e.target.value.toUpperCase() })}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Last Name *</label>
-                                <input 
+                                <input
                                     required
-                                    type="text" 
+                                    type="text"
                                     disabled={!college || !isCollegesOpen}
                                     readOnly={verificationStatus.rep1DetailsFetched && !isEditing.rep1}
                                     className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit uppercase ${(!college || !isCollegesOpen || (verificationStatus.rep1DetailsFetched && !isEditing.rep1)) ? 'opacity-30 cursor-not-allowed' : ''}`}
                                     value={rep1.lastName}
-                                    onChange={(e) => setRep1({...rep1, lastName: e.target.value.toUpperCase()})}
+                                    onChange={(e) => setRep1({ ...rep1, lastName: e.target.value.toUpperCase() })}
                                 />
                             </div>
                         </div>
@@ -845,9 +833,9 @@ const CollegeRepRegistration = () => {
                                     <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Phone *</label>
                                     <div className="relative flex items-center">
                                         <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
-                                        <input 
+                                        <input
                                             required
-                                            type="tel" 
+                                            type="tel"
                                             disabled={!college || !rep1.firstName || !rep1.lastName}
                                             readOnly={verificationStatus.rep1DetailsFetched && !isEditing.rep1}
                                             className={`w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${(!college || !rep1.firstName || !rep1.lastName || (verificationStatus.rep1DetailsFetched && !isEditing.rep1)) ? 'opacity-30 cursor-not-allowed' : ''}`}
@@ -861,9 +849,9 @@ const CollegeRepRegistration = () => {
                                     <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">WhatsApp *</label>
                                     <div className="relative flex items-center">
                                         <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
-                                        <input 
+                                        <input
                                             required
-                                            type="tel" 
+                                            type="tel"
                                             disabled={!college || !rep1.firstName || !rep1.lastName}
                                             readOnly={verificationStatus.rep1DetailsFetched && !isEditing.rep1}
                                             className={`w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${(!college || !rep1.firstName || !rep1.lastName || (verificationStatus.rep1DetailsFetched && !isEditing.rep1)) ? 'opacity-30 cursor-not-allowed' : ''}`}
@@ -883,7 +871,7 @@ const CollegeRepRegistration = () => {
                                             Verified
                                         </span>
                                     ) : (college && rep1.phone?.length === 10 && rep1.whatsapp?.length === 10) && (
-                                        <button 
+                                        <button
                                             type="button"
                                             onClick={() => handleVerifyEmail(1, rep1.email)}
                                             className="text-[9px] text-[#FFB464] hover:text-white transition-colors uppercase tracking-widest font-bold border-b border-[#FFB464]/30"
@@ -892,23 +880,23 @@ const CollegeRepRegistration = () => {
                                         </button>
                                     )}
                                 </div>
-                                <input 
+                                <input
                                     required
-                                    type="email" 
+                                    type="email"
                                     disabled={!college || rep1.phone?.length !== 10 || rep1.whatsapp?.length !== 10}
                                     readOnly={verificationStatus.rep1Email}
                                     className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${(!college || rep1.phone?.length !== 10 || rep1.whatsapp?.length !== 10 || verificationStatus.rep1Email) ? 'opacity-30 cursor-not-allowed' : ''}`}
                                     value={rep1.email}
                                     onChange={(e) => {
                                         const newEmail = e.target.value.toLowerCase();
-                                        setRep1({...rep1, email: newEmail});
+                                        setRep1({ ...rep1, email: newEmail });
                                         if (verificationStatus.rep1Email) {
                                             setVerificationStatus(prev => ({ ...prev, rep1Email: false, rep1DetailsFetched: false }));
                                             // Optional: Clear fields when switching email to avoid confusion
-                                            setRep1(prev => ({ 
-                                                ...prev, 
+                                            setRep1(prev => ({
+                                                ...prev,
                                                 email: newEmail,
-                                                firstName: '', middleName: '', lastName: '', phone: '', whatsapp: '' 
+                                                firstName: '', middleName: '', lastName: '', phone: '', whatsapp: ''
                                             }));
                                         }
                                     }}
@@ -927,7 +915,7 @@ const CollegeRepRegistration = () => {
                                 <span className="font-medieval text-[#FFB464] text-xl opacity-50">03</span>
                                 <h2 className="font-medieval text-2xl uppercase tracking-widest text-[#FFB464]">The Second Representative</h2>
                             </div>
-                            <button 
+                            <button
                                 type="button"
                                 onClick={() => setHasSecondRep(!hasSecondRep)}
                                 disabled={!isCollegesOpen || !verificationStatus.rep1Email}
@@ -942,56 +930,55 @@ const CollegeRepRegistration = () => {
                                 <div className="flex justify-between items-center bg-[#FFB464]/5 border-x border-t border-[#FFB464]/20 p-6 rounded-t-3xl border-b-[0.5px] border-b-[#FFB464]/10">
                                     <h2 className="font-medieval text-2xl uppercase tracking-widest text-[#FFB464]">The Second Representative</h2>
                                     {verificationStatus.rep2DetailsFetched && (
-                                        <button 
+                                        <button
                                             type="button"
                                             onClick={() => setIsEditing(prev => ({ ...prev, rep2: !prev.rep2 }))}
-                                            className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                                                isEditing.rep2 
-                                                ? 'bg-[#FFB464] text-black shadow-[0_0_15px_rgba(255,180,100,0.3)]' 
-                                                : 'bg-white/5 text-white/40 hover:text-white hover:bg-white/10'
-                                            }`}
+                                            className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${isEditing.rep2
+                                                    ? 'bg-[#FFB464] text-black shadow-[0_0_15px_rgba(255,180,100,0.3)]'
+                                                    : 'bg-white/5 text-white/40 hover:text-white hover:bg-white/10'
+                                                }`}
                                         >
                                             {isEditing.rep2 ? 'Lock & Save' : 'Edit Details'}
                                         </button>
                                     )}
                                 </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fadeIn">
-                                        <div className="space-y-2">
-                                            <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">First Name *</label>
-                                            <input 
-                                                required={hasSecondRep}
-                                                type="text" 
-                                                disabled={!college || !isCollegesOpen}
-                                                readOnly={verificationStatus.rep2DetailsFetched && !isEditing.rep2}
-                                                className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit uppercase ${(!college || !isCollegesOpen || (verificationStatus.rep2DetailsFetched && !isEditing.rep2)) ? 'opacity-30 cursor-not-allowed' : ''}`}
-                                                value={rep2.firstName}
-                                                onChange={(e) => setRep2({...rep2, firstName: e.target.value.toUpperCase()})}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Middle Name</label>
-                                            <input 
-                                                type="text" 
-                                                disabled={!college || !isCollegesOpen}
-                                                readOnly={verificationStatus.rep2DetailsFetched && !isEditing.rep2}
-                                                className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit uppercase ${(!college || !isCollegesOpen || (verificationStatus.rep2DetailsFetched && !isEditing.rep2)) ? 'opacity-30 cursor-not-allowed' : ''}`}
-                                                value={rep2.middleName}
-                                                onChange={(e) => setRep2({...rep2, middleName: e.target.value.toUpperCase()})}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Last Name *</label>
-                                            <input 
-                                                required={hasSecondRep}
-                                                type="text" 
-                                                disabled={!college || !isCollegesOpen}
-                                                readOnly={verificationStatus.rep2DetailsFetched && !isEditing.rep2}
-                                                className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit uppercase ${(!college || !isCollegesOpen || (verificationStatus.rep2DetailsFetched && !isEditing.rep2)) ? 'opacity-30 cursor-not-allowed' : ''}`}
-                                                value={rep2.lastName}
-                                                onChange={(e) => setRep2({...rep2, lastName: e.target.value.toUpperCase()})}
-                                            />
-                                        </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fadeIn">
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">First Name *</label>
+                                        <input
+                                            required={hasSecondRep}
+                                            type="text"
+                                            disabled={!college || !isCollegesOpen}
+                                            readOnly={verificationStatus.rep2DetailsFetched && !isEditing.rep2}
+                                            className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit uppercase ${(!college || !isCollegesOpen || (verificationStatus.rep2DetailsFetched && !isEditing.rep2)) ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                            value={rep2.firstName}
+                                            onChange={(e) => setRep2({ ...rep2, firstName: e.target.value.toUpperCase() })}
+                                        />
                                     </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Middle Name</label>
+                                        <input
+                                            type="text"
+                                            disabled={!college || !isCollegesOpen}
+                                            readOnly={verificationStatus.rep2DetailsFetched && !isEditing.rep2}
+                                            className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit uppercase ${(!college || !isCollegesOpen || (verificationStatus.rep2DetailsFetched && !isEditing.rep2)) ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                            value={rep2.middleName}
+                                            onChange={(e) => setRep2({ ...rep2, middleName: e.target.value.toUpperCase() })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Last Name *</label>
+                                        <input
+                                            required={hasSecondRep}
+                                            type="text"
+                                            disabled={!college || !isCollegesOpen}
+                                            readOnly={verificationStatus.rep2DetailsFetched && !isEditing.rep2}
+                                            className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit uppercase ${(!college || !isCollegesOpen || (verificationStatus.rep2DetailsFetched && !isEditing.rep2)) ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                            value={rep2.lastName}
+                                            onChange={(e) => setRep2({ ...rep2, lastName: e.target.value.toUpperCase() })}
+                                        />
+                                    </div>
+                                </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="grid grid-cols-2 gap-4 animate-fadeIn">
@@ -999,9 +986,9 @@ const CollegeRepRegistration = () => {
                                             <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">Phone *</label>
                                             <div className="relative flex items-center">
                                                 <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
-                                                <input 
+                                                <input
                                                     required={hasSecondRep}
-                                                    type="tel" 
+                                                    type="tel"
                                                     disabled={!college || !rep2.firstName || !rep2.lastName}
                                                     readOnly={verificationStatus.rep2DetailsFetched && !isEditing.rep2}
                                                     className={`w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${(!college || !rep2.firstName || !rep2.lastName || (verificationStatus.rep2DetailsFetched && !isEditing.rep2)) ? 'opacity-30 cursor-not-allowed' : ''}`}
@@ -1015,9 +1002,9 @@ const CollegeRepRegistration = () => {
                                             <label className="block text-[10px] uppercase tracking-[0.2em] text-white/40 font-bold">WhatsApp *</label>
                                             <div className="relative flex items-center">
                                                 <span className="absolute left-4 text-white/60 font-outfit select-none pointer-events-none">+91</span>
-                                                <input 
+                                                <input
                                                     required={hasSecondRep}
-                                                    type="tel" 
+                                                    type="tel"
                                                     disabled={!college || !rep2.firstName || !rep2.lastName}
                                                     readOnly={verificationStatus.rep2DetailsFetched && !isEditing.rep2}
                                                     className={`w-full bg-white/5 border border-white/10 p-4 pl-14 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${(!college || !rep2.firstName || !rep2.lastName || (verificationStatus.rep2DetailsFetched && !isEditing.rep2)) ? 'opacity-30 cursor-not-allowed' : ''}`}
@@ -1037,7 +1024,7 @@ const CollegeRepRegistration = () => {
                                                     Verified
                                                 </span>
                                             ) : (college && rep2.phone?.length === 10 && rep2.whatsapp?.length === 10) && (
-                                                <button 
+                                                <button
                                                     type="button"
                                                     onClick={() => handleVerifyEmail(2, rep2.email)}
                                                     className="text-[9px] text-[#FFB464] hover:text-white transition-colors uppercase tracking-widest font-bold border-b border-[#FFB464]/30"
@@ -1046,16 +1033,16 @@ const CollegeRepRegistration = () => {
                                                 </button>
                                             )}
                                         </div>
-                                        <input 
+                                        <input
                                             required={hasSecondRep}
-                                            type="email" 
+                                            type="email"
                                             disabled={!college || rep2.phone?.length !== 10 || rep2.whatsapp?.length !== 10}
                                             readOnly={verificationStatus.rep2Email}
                                             className={`w-full bg-white/5 border border-white/10 p-4 text-white focus:border-[#FFB464] outline-none transition-all font-outfit ${(!college || rep2.phone?.length !== 10 || rep2.whatsapp?.length !== 10 || verificationStatus.rep2Email) ? 'opacity-30 cursor-not-allowed' : ''}`}
                                             value={rep2.email}
                                             onChange={(e) => {
                                                 const newEmail = e.target.value.toLowerCase();
-                                                
+
                                                 // Prevent duplicate of 1st rep
                                                 if (newEmail && rep1.email && newEmail === rep1.email.toLowerCase()) {
                                                     toast.error("This is 1st Representative's email. Please use a different email for 2nd Representative.");
@@ -1063,13 +1050,13 @@ const CollegeRepRegistration = () => {
                                                     return;
                                                 }
 
-                                                setRep2({...rep2, email: newEmail});
+                                                setRep2({ ...rep2, email: newEmail });
                                                 if (verificationStatus.rep2Email) {
                                                     setVerificationStatus(prev => ({ ...prev, rep2Email: false, rep2DetailsFetched: false }));
-                                                    setRep2(prev => ({ 
-                                                        ...prev, 
+                                                    setRep2(prev => ({
+                                                        ...prev,
                                                         email: newEmail,
-                                                        firstName: '', middleName: '', lastName: '', phone: '', whatsapp: '' 
+                                                        firstName: '', middleName: '', lastName: '', phone: '', whatsapp: ''
                                                     }));
                                                 }
                                             }}
@@ -1087,12 +1074,12 @@ const CollegeRepRegistration = () => {
                     <div className="pt-12 border-t border-white/10">
                         <div className="flex flex-col items-center gap-6">
                             {(() => {
-                                const isSubmitEnabled = college && 
+                                const isSubmitEnabled = college &&
                                     rep1.firstName && rep1.lastName && rep1.phone?.length === 10 && rep1.whatsapp?.length === 10 && verificationStatus.rep1Email &&
                                     (!hasSecondRep || (rep2.firstName && rep2.lastName && rep2.phone?.length === 10 && rep2.whatsapp?.length === 10 && verificationStatus.rep2Email));
 
                                 return (
-                                    <button 
+                                    <button
                                         type="submit"
                                         disabled={isSubmitting || !isCollegesOpen || !isSubmitEnabled}
                                         className={`w-full max-w-xl py-6 bg-[#FFB464] text-black font-bungee text-2xl hover:bg-white transition-all duration-500 uppercase tracking-widest shadow-[0_0_50px_rgba(255,180,100,0.3)] ${isSubmitting || !isCollegesOpen || !isSubmitEnabled ? 'opacity-30 cursor-not-allowed' : ''}`}
