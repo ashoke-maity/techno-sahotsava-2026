@@ -979,24 +979,6 @@ export default function Home() {
                     </>
                   )}
                 </button>
-
-                {/* BROCHURE PORTAL - Dynamic Asset */}
-                {officialBrochureUrl && (
-                  <a
-                    href={officialBrochureUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 border-amber-400/40 hover:border-amber-400 bg-amber-400/10 hover:bg-amber-400/20 backdrop-blur-sm transition-all duration-400"
-                  >
-                    <span className="text-amber-400 text-sm group-hover:scale-125 transition-transform duration-400">
-                      ▼
-                    </span>
-                    <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold group-hover:text-amber-300 transition-colors duration-400">
-                      Brochure
-                    </span>
-                    <span className="block h-[1.5px] w-6 bg-amber-400/50 group-hover:w-10 group-hover:bg-amber-400 transition-all duration-500 ease-out" />
-                  </a>
-                )}
               </div>
             </div>
 
