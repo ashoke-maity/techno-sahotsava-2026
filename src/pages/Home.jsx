@@ -904,7 +904,7 @@ export default function Home() {
             {/* SLOT 3: ACTION BUTTONS - Sleek pill row */}
             <div className="relative mt-8 flex flex-col items-center gap-4">
               {/* Sacred inscription buttons */}
-              <div className="flex items-stretch gap-3">
+              <div className="flex flex-wrap items-stretch justify-center gap-3">
                 {/* SPONSOR */}
                 <a
                   href={import.meta.env.VITE_SPONSOR_REDIRECT}
@@ -945,6 +945,18 @@ export default function Home() {
                     <span className="block h-[1.5px] w-6 bg-white/30" />
                   </div>
                 )}
+
+                {/* BECOME A REP */}
+                <button
+                  onClick={() => navigate("/college-rep-registration")}
+                  className="group flex flex-col items-center justify-center gap-1.5 px-7 py-4 border-2 border-white/60 hover:border-white bg-white/25 hover:bg-white/35 backdrop-blur-sm transition-all duration-400"
+                >
+                  <span className="text-[#FFB464] text-sm">✦</span>
+                  <span className="font-medieval text-[10px] tracking-[0.4em] uppercase text-white font-bold">
+                    Become a Rep
+                  </span>
+                  <span className="block h-[1.5px] w-6 bg-white/70 group-hover:w-10 group-hover:bg-[#FFB464] transition-all duration-500 ease-out" />
+                </button>
 
                 {/* RESULTS */}
                 <button
