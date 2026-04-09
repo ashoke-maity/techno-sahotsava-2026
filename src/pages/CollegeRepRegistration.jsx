@@ -719,33 +719,34 @@ const CollegeRepRegistration = () => {
                                         {filteredColleges.length > 0 ? (
                                             filteredColleges.map((c, i) => {
                                                 const collegeName = typeof c === 'string' ? c : c.name || c.college_name;
+
                                                 return (
                                                     <div
                                                         key={i}
                                                         onClick={() => {
                                                             if (collegeName !== college) {
-                                                                setCollege(collegeName);
-                                                                setIsDropdownOpen(false);
-                                                                setSearchTerm('');
+                                                                 setCollege(collegeName);
+                                                                 setIsDropdownOpen(false);
+                                                                 setSearchTerm('');
 
-                                                                // Full Reset to prevent curiosity bypasses
-                                                                setRep1({ ...initialRepState });
-                                                                setRep2({ ...initialRepState });
-                                                                setVerificationStatus({
-                                                                    rep1Email: false,
-                                                                    rep2Email: false,
-                                                                    rep1DetailsFetched: false,
-                                                                    rep2DetailsFetched: false
-                                                                });
-                                                                setIsEditing({ rep1: false, rep2: false });
-                                                                toast.info(`You have switched to "${collegeName}". Please start verification anew.`);
+                                                                 // Full Reset to prevent curiosity bypasses
+                                                                 setRep1({ ...initialRepState });
+                                                                 setRep2({ ...initialRepState });
+                                                                 setVerificationStatus({
+                                                                     rep1Email: false,
+                                                                     rep2Email: false,
+                                                                     rep1DetailsFetched: false,
+                                                                     rep2DetailsFetched: false
+                                                                 });
+                                                                 setIsEditing({ rep1: false, rep2: false });
+                                                                 toast.success(`You have selected "${collegeName}".`);
                                                             } else {
                                                                 setIsDropdownOpen(false);
                                                             }
                                                         }}
-                                                        className={`p-4 text-sm font-outfit cursor-pointer transition-colors hover:bg-[#FFB464]/10 hover:text-[#FFB464] ${college === collegeName ? 'bg-[#FFB464]/20 text-[#FFB464]' : 'text-white/70'}`}
+                                                        className={`p-4 text-sm font-outfit cursor-pointer transition-colors flex justify-between items-center group ${college === collegeName ? 'bg-[#FFB464]/20 text-[#FFB464]' : 'text-white/70 hover:bg-[#FFB464]/10 hover:text-[#FFB464]'}`}
                                                     >
-                                                        {collegeName}
+                                                        <span>{collegeName}</span>
                                                     </div>
                                                 );
                                             })
