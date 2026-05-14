@@ -9,9 +9,8 @@ import sanskaranLogo from '../assets/logos/sanskaran logo png WHITE.png';
 import cameraLogo from '../assets/logos/Chitraka white logo.png';
 import loadingVideo from "../assets/loading_screen/loading_anim.mp4";
 
-const PreviewCanvas = ({ candidateName, position, eventName }) => {
+const PreviewCanvas = ({ candidateName, position, eventName, collegeName }) => {
     const canvasRef = React.useRef(null);
-
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -24,18 +23,114 @@ const PreviewCanvas = ({ candidateName, position, eventName }) => {
             canvas.width = img.width;
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
-            ctx.textAlign = 'center';
-            ctx.font = 'bold 80px Arial';
-            ctx.fillStyle = '#111111';
-            ctx.fillText(candidateName, canvas.width / 2, canvas.height / 2 - 60);
-            ctx.font = 'bold 45px Arial';
-            ctx.fillStyle = '#ffb464';
-            ctx.fillText(position, canvas.width / 2, canvas.height / 2 + 80);
-            ctx.font = '35px Arial';
-            ctx.fillStyle = '#555555';
-            ctx.fillText(eventName, canvas.width / 2, canvas.height / 2 + 180);
+
+            const citation = `This certificate is proudly presented to ${candidateName} from ${collegeName || '[INSTITUTION]'} for securing the position of ${position} in ${eventName} at Techno Sahotsava 2026, the annual cultural fest of Techno India University, West Bengal.\n\nYour outstanding performance, dedication, and enthusiasm are truly commendable and deeply appreciated.`;
+
+            const fontSize = 38;
+            const lineHeight = 50;
+            const paragraphGap = 10;
+            const normalFont = `${fontSize}px "Times New Roman", serif`;
+            const boldFont = `bold ${fontSize}px "Times New Roman", serif`;
+            
+            const segments = [
+                { text: 'This certificate is proudly presented to ', bold: false },
+                { text: candidateName, bold: true },
+                { text: ' from ', bold: false },
+                { text: collegeName || '[INSTITUTION]', bold: true },
+                { text: ' for securing the position of ', bold: false },
+                { text: position, bold: true },
+                { text: ' in ', bold: false },
+                { text: eventName, bold: true },
+                { text: ' at Techno Sahotsava 2026, the annual cultural fest of Techno India University, West Bengal.', bold: false },
+                { text: '\n\nYour outstanding performance, dedication, and enthusiasm are truly commendable and deeply appreciated.', bold: false }
+            ];
+
+            const words = [];
+            segments.forEach(seg => {
+                const parts = seg.text.split(/(\n\n|\s+)/);
+                parts.forEach(p => {
+                    if (p) words.push({ text: p, bold: seg.bold });
+                });
+            });
+
+            const maxWidth = canvas.width * 0.72;
+            const lines = [];
+            let currentLine = [];
+            let currentWidth = 0;
+
+            ctx.textAlign = 'left';
+
+            words.forEach(word => {
+                if (word.text === '\n\n') {
+                    lines.push({ words: currentLine, width: currentWidth });
+                    lines.push({ words: [], width: 0, spacer: true });
+                    currentLine = [];
+                    currentWidth = 0;
+                    return;
+                }
+                ctx.font = word.bold ? boldFont : normalFont;
+                const wordWidth = ctx.measureText(word.text).width;
+                if (currentWidth + wordWidth > maxWidth && currentLine.length > 0) {
+                    lines.push({ words: currentLine, width: currentWidth });
+                    currentLine = [word];
+                    currentWidth = wordWidth;
+                } else {
+                    currentLine.push(word);
+                    currentWidth += wordWidth;
+                }
+            });
+            if (currentLine.length > 0) lines.push({ words: currentLine, width: currentWidth });
+
+            const totalHeight = lines.filter(l => !l.spacer).length * lineHeight + lines.filter(l => l.spacer).length * paragraphGap;
+            let currentY = (canvas.height / 2) - (totalHeight / 2) + 120;
+
+            lines.forEach((line, i) => {
+                if (line.spacer) {
+                    currentY += paragraphGap;
+                    return;
+                }
+                
+                const isLastLineOfPara = (i === lines.length - 1) || lines[i+1]?.spacer;
+                const startX = (canvas.width - maxWidth) / 2;
+                const visibleWords = line.words.filter(w => w.text.trim().length > 0);
+                
+                if (isLastLineOfPara || visibleWords.length <= 1) {
+                    let x = startX;
+                    line.words.forEach(word => {
+                        ctx.font = word.bold ? boldFont : normalFont;
+                        ctx.fillStyle = '#222222';
+                        ctx.fillText(word.text, x, currentY);
+                        if (word.bold && word.text.trim().length > 0) {
+                            const metrics = ctx.measureText(word.text);
+                            ctx.strokeStyle = '#222222'; ctx.lineWidth = 2;
+                            ctx.beginPath(); ctx.moveTo(x, currentY + 6); ctx.lineTo(x + metrics.width, currentY + 6); ctx.stroke();
+                        }
+                        x += ctx.measureText(word.text).width;
+                    });
+                } else {
+                    const totalWordWidth = visibleWords.reduce((acc, w) => {
+                        ctx.font = w.bold ? boldFont : normalFont;
+                        return acc + ctx.measureText(w.text.trim()).width;
+                    }, 0);
+                    
+                    const spaceWidth = (maxWidth - totalWordWidth) / (visibleWords.length - 1);
+                    let x = startX;
+                    visibleWords.forEach(word => {
+                        ctx.font = word.bold ? boldFont : normalFont;
+                        ctx.fillStyle = '#222222';
+                        ctx.fillText(word.text.trim(), x, currentY);
+                        if (word.bold) {
+                            const metrics = ctx.measureText(word.text.trim());
+                            ctx.strokeStyle = '#222222'; ctx.lineWidth = 2;
+                            ctx.beginPath(); ctx.moveTo(x, currentY + 6); ctx.lineTo(x + metrics.width, currentY + 6); ctx.stroke();
+                        }
+                        x += ctx.measureText(word.text.trim()).width + spaceWidth;
+                    });
+                }
+                currentY += lineHeight;
+            });
         };
-    }, [candidateName, position, eventName]);
+    }, [candidateName, position, eventName, collegeName]);
 
     return (
         <canvas 
@@ -347,6 +442,7 @@ const Results = () => {
                                                         candidateName={result.candidate_name}
                                                         position={result.position}
                                                         eventName={result.event_name}
+                                                        collegeName={result.college_name}
                                                     />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-40 group-hover:opacity-100 transition-opacity duration-700" />
                                                 </div>
@@ -379,16 +475,111 @@ const Results = () => {
                                                                     canvas.width = img.width;
                                                                     canvas.height = img.height;
                                                                     ctx.drawImage(img, 0, 0);
-                                                                    ctx.textAlign = 'center';
-                                                                    ctx.font = 'bold 80px Arial';
-                                                                    ctx.fillStyle = '#111111';
-                                                                    ctx.fillText(result.candidate_name, canvas.width / 2, canvas.height / 2 - 60);
-                                                                    ctx.font = 'bold 45px Arial';
-                                                                    ctx.fillStyle = '#ffb464';
-                                                                    ctx.fillText(result.position, canvas.width / 2, canvas.height / 2 + 80);
-                                                                    ctx.font = '35px Arial';
-                                                                    ctx.fillStyle = '#555555';
-                                                                    ctx.fillText(result.event_name, canvas.width / 2, canvas.height / 2 + 180);
+
+                                                                    const fontSize = 38;
+                                                                    const lineHeight = 50;
+                                                                    const paragraphGap = 10;
+                                                                    const normalFont = `${fontSize}px "Times New Roman", serif`;
+                                                                    const boldFont = `bold ${fontSize}px "Times New Roman", serif`;
+                                                                    
+                                                                    const segments = [
+                                                                        { text: 'This certificate is proudly presented to ', bold: false },
+                                                                        { text: result.candidate_name, bold: true },
+                                                                        { text: ' from ', bold: false },
+                                                                        { text: result.college_name || '[INSTITUTION]', bold: true },
+                                                                        { text: ' for securing the position of ', bold: false },
+                                                                        { text: result.position, bold: true },
+                                                                        { text: ' in ', bold: false },
+                                                                        { text: result.event_name, bold: true },
+                                                                        { text: ' at Techno Sahotsava 2026, the annual cultural fest of Techno India University, West Bengal.', bold: false },
+                                                                        { text: '\n\nYour outstanding performance, dedication, and enthusiasm are truly commendable and deeply appreciated.', bold: false }
+                                                                    ];
+
+                                                                    const words = [];
+                                                                    segments.forEach(seg => {
+                                                                        const parts = seg.text.split(/(\n\n|\s+)/);
+                                                                        parts.forEach(p => {
+                                                                            if (p) words.push({ text: p, bold: seg.bold });
+                                                                        });
+                                                                    });
+
+                                                                    const maxWidth = canvas.width * 0.72;
+                                                                    const lines = [];
+                                                                    let currentLine = [];
+                                                                    let currentWidth = 0;
+
+                                                                    ctx.textAlign = 'left';
+
+                                                                    words.forEach(word => {
+                                                                        if (word.text === '\n\n') {
+                                                                            lines.push({ words: currentLine, width: currentWidth });
+                                                                            lines.push({ words: [], width: 0, spacer: true });
+                                                                            currentLine = [];
+                                                                            currentWidth = 0;
+                                                                            return;
+                                                                        }
+                                                                        ctx.font = word.bold ? boldFont : normalFont;
+                                                                        const wordWidth = ctx.measureText(word.text).width;
+                                                                        if (currentWidth + wordWidth > maxWidth && currentLine.length > 0) {
+                                                                            lines.push({ words: currentLine, width: currentWidth });
+                                                                            currentLine = [word];
+                                                                            currentWidth = wordWidth;
+                                                                        } else {
+                                                                            currentLine.push(word);
+                                                                            currentWidth += wordWidth;
+                                                                        }
+                                                                    });
+                                                                    if (currentLine.length > 0) lines.push({ words: currentLine, width: currentWidth });
+
+                                                                    const totalHeight = lines.filter(l => !l.spacer).length * lineHeight + lines.filter(l => l.spacer).length * paragraphGap;
+                                                                    let currentY = (canvas.height / 2) - (totalHeight / 2) + 120;
+
+                                                                    lines.forEach((line, i) => {
+                                                                        if (line.spacer) {
+                                                                            currentY += paragraphGap;
+                                                                            return;
+                                                                        }
+                                                                        
+                                                                        const isLastLineOfPara = (i === lines.length - 1) || lines[i+1]?.spacer;
+                                                                        const startX = (canvas.width - maxWidth) / 2;
+                                                                        const visibleWords = line.words.filter(w => w.text.trim().length > 0);
+                                                                        
+                                                                        if (isLastLineOfPara || visibleWords.length <= 1) {
+                                                                            let x = startX;
+                                                                            line.words.forEach(word => {
+                                                                                ctx.font = word.bold ? boldFont : normalFont;
+                                                                                ctx.fillStyle = '#222222';
+                                                                                ctx.fillText(word.text, x, currentY);
+                                                                                if (word.bold && word.text.trim().length > 0) {
+                                                                                    const metrics = ctx.measureText(word.text);
+                                                                                    ctx.strokeStyle = '#222222'; ctx.lineWidth = 2;
+                                                                                    ctx.beginPath(); ctx.moveTo(x, currentY + 6); ctx.lineTo(x + metrics.width, currentY + 6); ctx.stroke();
+                                                                                }
+                                                                                x += ctx.measureText(word.text).width;
+                                                                            });
+                                                                        } else {
+                                                                            const totalWordWidth = visibleWords.reduce((acc, w) => {
+                                                                                ctx.font = w.bold ? boldFont : normalFont;
+                                                                                return acc + ctx.measureText(w.text.trim()).width;
+                                                                            }, 0);
+                                                                            
+                                                                            const spaceWidth = (maxWidth - totalWordWidth) / (visibleWords.length - 1);
+                                                                            let x = startX;
+                                                                            visibleWords.forEach(word => {
+                                                                                ctx.font = word.bold ? boldFont : normalFont;
+                                                                                ctx.fillStyle = '#222222';
+                                                                                ctx.fillText(word.text.trim(), x, currentY);
+                                                                                if (word.bold) {
+                                                                                    const metrics = ctx.measureText(word.text.trim());
+                                                                                    ctx.strokeStyle = '#222222'; ctx.lineWidth = 2;
+                                                                                    ctx.beginPath(); ctx.moveTo(x, currentY + 6); ctx.lineTo(x + metrics.width, currentY + 6); ctx.stroke();
+                                                                                }
+                                                                                x += ctx.measureText(word.text.trim()).width + spaceWidth;
+                                                                            });
+                                                                        }
+                                                                        currentY += lineHeight;
+                                                                    });
+
                                                                     const link = document.createElement('a');
                                                                     link.download = `TS26_Certificate_${result.candidate_name.replace(/\s+/g, '_')}.png`;
                                                                     link.href = canvas.toDataURL('image/png');
